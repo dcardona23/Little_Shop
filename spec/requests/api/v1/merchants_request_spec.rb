@@ -28,4 +28,11 @@ describe "Merchants" do
     expect(response).to be_successful
     expect(new_merchant.name).to eq(merchant_params[:name])
     end
+
+    it 'can delete a merchant' do
+      delete "/api/v1/merchants/#{@merchant1.id}"
+
+      expect(response).to be_successful
+      expect(Merchant.find(@merchant1.id)).to raise_error(ActiveRecord::RecordNotFound)
+    end
 end
