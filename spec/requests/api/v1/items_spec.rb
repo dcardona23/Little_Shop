@@ -2,38 +2,38 @@ require 'rails_helper'
 
 describe "items" do
   before(:each) do
-    id = Merchant.create(
+    @id = Merchant.create(
       name: "Susan"
     ).id
-    id2 = Merchant.create(
+    @id2 = Merchant.create(
       name: "Steve"
     ).id
     @item1 = Item.create({
       name: "apple",
       description: "is am apple",
       unit_price: 0.50,
-      merchant_id: id
+      merchant_id: @id
     })
-    sleep(1)
+    # sleep(1)
     @item2 = Item.create({
       name: "cherry",
       description: "is am cherry",
       unit_price: 1.50,
-      merchant_id: id2
+      merchant_id: @id2
     })
-    sleep(1)
+    # sleep(1)
     @item3 = Item.create({
       name: "pear",
       description: "is am pear",
       unit_price: 0.75,
-      merchant_id: id
+      merchant_id: @id
     })
-    sleep(1)
+    # sleep(1)
     @item4 = Item.create({
       name: "banana",
       description: "is am banaa",
       unit_price: 3.50,
-      merchant_id: id2
+      merchant_id: @id2
     })
   end
 
@@ -96,7 +96,7 @@ describe "items" do
 
     expect(response).to be_successful
     item_created = JSON.parse(response.body, symbolize_names: true)
-    id = item_created[:data]
+    item = item_created[:data]
     expect(item_created[:data]).to have_key(:id)
     expect(item_created[:data][:id]).to be_an(String)
 
@@ -107,7 +107,7 @@ describe "items" do
     expect(item_created[:data][:attributes][:description]).to be_a(String)
 
     expect(item_created[:data][:attributes]).to have_key(:unit_price)
-    expect(item_created[:attributes][:unit_price]).to be_a(Float)
+    expect(item_created[:data][:attributes][:unit_price]).to be_a(Float)
 
     expect(item_created[:data][:attributes]).to have_key(:merchant_id)
     expect(item_created[:data][:attributes][:merchant_id]).to be_a(Integer)
@@ -117,6 +117,7 @@ describe "items" do
 
     expect(item_created[:data][:attributes][:name]).to eq("potatoe")
     expect(item_created[:data][:attributes][:description]).to eq("am potatoe")
-    expect(all_items[:data]).to include(id)
+    expect(all_items[:data]).to include(item)
+
   end
 end
