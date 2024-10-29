@@ -7,11 +7,27 @@ class Api::V1::ItemsController < ApplicationController
     render json: ItemSerializer.new(items, options)
   end
 
-
+  def show
+    begin
+      item = Item.find(params[:id])
+      render json: ItemSerializer.new(item)
+    rescue ActiveRecord::RecordNotFound => exception
+      render json: {
+        errors: [
+          {
+            status: "404",
+            title: exception.message
+          }
+        ]
+      }, status: :not_found
+    end
+  end
 
 
 
   private
+
+
 
   def sort_items(scope)
     case params[:sorted]
