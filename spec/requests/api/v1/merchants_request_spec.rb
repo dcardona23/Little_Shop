@@ -4,6 +4,7 @@ describe "Merchants" do
   before :each do
     @merchant1 = Merchant.create(name: "Little Shop of Horrors")
     @merchant2 = Merchant.create(name: "Large Shop of Wonders")
+    @merchant3 = Merchant.create(name: "Wizard's Chest")
   end
 
   it 'can get a merchant' do
@@ -28,4 +29,16 @@ describe "Merchants" do
     expect(response).to be_successful
     expect(new_merchant.name).to eq(merchant_params[:name])
     end
+
+  it 'can sort all merchants by time of creation' do
+    get '/api/v1/merchants?sorted=age'
+    merchants = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response).to be_successful
+    expect(merchants[:data][0][:attributes][:name]).to eq("Little Shop of Horrors")
+    expect(merchants[:data][1][:attributes][:name]).to eq("Large Shop of Wonders")
+    expect(merchants[:data][2][:attributes][:name]).to eq("Wizard's Chest")
+
+    
+  end
 end
