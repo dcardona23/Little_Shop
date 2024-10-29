@@ -84,7 +84,7 @@ describe "items" do
     expect(items_sorted[:data][3][:attributes][:unit_price]).to eq(3.50)
   end
 
-  it 'can create new items' do
+  it 'can create new items then delete them' do
     params = {
       name: "potatoe",
       description: "am potatoe",
@@ -97,6 +97,7 @@ describe "items" do
     expect(response).to be_successful
     item_created = JSON.parse(response.body, symbolize_names: true)
     item = item_created[:data]
+    item_id = item_created[:data][:id]
     expect(item_created[:data]).to have_key(:id)
     expect(item_created[:data][:id]).to be_an(String)
 
@@ -118,6 +119,15 @@ describe "items" do
     expect(item_created[:data][:attributes][:name]).to eq("potatoe")
     expect(item_created[:data][:attributes][:description]).to eq("am potatoe")
     expect(all_items[:data]).to include(item)
+
+    delete "/api/v1/items/#{item_id.to_i}"
+    expect(response).to be_successful
+
+    get "/api/v1/items"
+    all_items_delete = JSON.parse(response.body, symbolize_names: true)
+
+    expect(all_items_delete[:data]).not_to include(item)
+
 
   end
 end
