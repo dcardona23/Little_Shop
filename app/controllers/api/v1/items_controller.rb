@@ -22,10 +22,22 @@ class Api::V1::ItemsController < ApplicationController
       }, status: :not_found
     end
   end
+  
+  def create
+    item = Item.create(item_param)
+    render json: ItemSerializer.new(item), status: :created
+  end
 
+  def destroy
+    render json: Item.delete(params[:id]), status: :no_content
+  end
 
 
   private
+
+  def item_param
+    params.require(:item).permit(:name, :description, :unit_price, :merchant_id)
+  end
 
 
 
