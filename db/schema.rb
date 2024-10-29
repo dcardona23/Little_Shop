@@ -13,6 +13,7 @@
 ActiveRecord::Schema[7.1].define(version: 0) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
   create_table "customers", force: :cascade do |t|
     t.string "first_name"
     t.string "last_name"
@@ -73,5 +74,4 @@ ActiveRecord::Schema[7.1].define(version: 0) do
   add_foreign_key "invoices", "merchants"
   add_foreign_key "items", "merchants"
   add_foreign_key "transactions", "invoices"
-
 end

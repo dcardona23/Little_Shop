@@ -14,4 +14,18 @@ describe "Merchants" do
     expect(merchant["data"]["attributes"]).to have_key("name")
     expect(merchant["data"]["attributes"]["name"]).to eq(@merchant1.name)
   end
+
+  it 'can create a new merchant' do
+    merchant_params = {
+      name: "Susan"
+      }
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+    post "/api/v1/merchants", headers: headers, params: JSON.generate(merchant: merchant_params)
+
+    new_merchant = Merchant.last
+
+    expect(response).to be_successful
+    expect(new_merchant.name).to eq(merchant_params[:name])
+    end
 end

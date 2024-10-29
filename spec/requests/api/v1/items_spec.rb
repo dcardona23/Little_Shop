@@ -14,21 +14,21 @@ describe "items" do
       unit_price: 0.50,
       merchant_id: @id
     })
-    # sleep(1)
+    
     @item2 = Item.create({
       name: "cherry",
       description: "is am cherry",
       unit_price: 1.50,
       merchant_id: @id2
     })
-    # sleep(1)
+    
     @item3 = Item.create({
       name: "pear",
       description: "is am pear",
       unit_price: 0.75,
       merchant_id: @id
     })
-    # sleep(1)
+    
     @item4 = Item.create({
       name: "banana",
       description: "is am banaa",
@@ -37,51 +37,90 @@ describe "items" do
     })
   end
 
-  it "can call all items" do
-    get '/api/v1/items'
-    expect(response).to be_successful
-    items = JSON.parse(response.body, symbolize_names: true)
-  
-    expect(items[:data].count).to eq(4)
-    expect(items[:meta]).to have_key(:count)
-    expect(items[:meta][:count]).to equal(items[:data].count)
+  describe "#index" do
+    it "can call all items" do
+      get '/api/v1/items'
+      expect(response).to be_successful
+      items = JSON.parse(response.body, symbolize_names: true)
+    
+      expect(items[:data].count).to eq(4)
+      expect(items[:meta]).to have_key(:count)
+      expect(items[:meta][:count]).to equal(items[:data].count)
 
-    items[:data].each do |item|
-      expect(item).to have_key(:id)
-      expect(item[:id]).to be_an(String)
+      items[:data].each do |item|
+        expect(item).to have_key(:id)
+        expect(item[:id]).to be_an(String)
 
-      expect(item[:attributes]).to have_key(:name)
-      expect(item[:attributes][:name]).to be_a(String)
+        expect(item[:attributes]).to have_key(:name)
+        expect(item[:attributes][:name]).to be_a(String)
 
-      expect(item[:attributes]).to have_key(:description)
-      expect(item[:attributes][:description]).to be_a(String)
+        expect(item[:attributes]).to have_key(:description)
+        expect(item[:attributes][:description]).to be_a(String)
 
-      expect(item[:attributes]).to have_key(:unit_price)
-      expect(item[:attributes][:unit_price]).to be_a(Float)
+        expect(item[:attributes]).to have_key(:unit_price)
+        expect(item[:attributes][:unit_price]).to be_a(Float)
 
-      expect(item[:attributes]).to have_key(:merchant_id)
-      expect(item[:attributes][:merchant_id]).to be_a(Integer)
+        expect(item[:attributes]).to have_key(:merchant_id)
+        expect(item[:attributes][:merchant_id]).to be_a(Integer)
+      end
+    end
+
+    it 'can sort by price' do
+      get '/api/v1/items'
+      expect(response).to be_successful
+      items = JSON.parse(response.body, symbolize_names: true)
+
+      expect(items[:data][0][:attributes][:unit_price]).to eq(0.50)
+      expect(items[:data][1][:attributes][:unit_price]).to eq(1.50)
+      expect(items[:data][2][:attributes][:unit_price]).to eq(0.75)
+      expect(items[:data][3][:attributes][:unit_price]).to eq(3.50)
+
+      get '/api/v1/items?sorted=price'
+      expect(response).to be_successful
+      items_sorted = JSON.parse(response.body, symbolize_names: true)
+
+      expect(items_sorted[:data][0][:attributes][:unit_price]).to eq(0.50)
+      expect(items_sorted[:data][1][:attributes][:unit_price]).to eq(0.75)
+      expect(items_sorted[:data][2][:attributes][:unit_price]).to eq(1.50)
+      expect(items_sorted[:data][3][:attributes][:unit_price]).to eq(3.50)
     end
   end
 
-  it 'can sort by price' do
-    get '/api/v1/items'
-    expect(response).to be_successful
-    items = JSON.parse(response.body, symbolize_names: true)
+  describe "#show" do
+    it "can get one item by #id" do
+      get "/api/v1/items/#{@item1.id}"
 
-    expect(items[:data][0][:attributes][:unit_price]).to eq(0.50)
-    expect(items[:data][1][:attributes][:unit_price]).to eq(1.50)
-    expect(items[:data][2][:attributes][:unit_price]).to eq(0.75)
-    expect(items[:data][3][:attributes][:unit_price]).to eq(3.50)
+      expect(response).to be_successful
 
-    get '/api/v1/items?sorted=price'
-    expect(response).to be_successful
-    items_sorted = JSON.parse(response.body, symbolize_names: true)
+      item = JSON.parse(response.body, symbolize_names: true)
 
-    expect(items_sorted[:data][0][:attributes][:unit_price]).to eq(0.50)
-    expect(items_sorted[:data][1][:attributes][:unit_price]).to eq(0.75)
-    expect(items_sorted[:data][2][:attributes][:unit_price]).to eq(1.50)
-    expect(items_sorted[:data][3][:attributes][:unit_price]).to eq(3.50)
+      expect(item[:data]).to have_key(:id)
+      expect(item[:data][:id]).to be_an(String)
+
+      expect(item[:data][:attributes]).to have_key(:name)
+      expect(item[:data][:attributes][:name]).to be_a(String)
+
+      expect(item[:data][:attributes]).to have_key(:description)
+      expect(item[:data][:attributes][:description]).to be_a(String)
+
+      expect(item[:data][:attributes]).to have_key(:unit_price)
+      expect(item[:data][:attributes][:unit_price]).to be_a(Float)
+
+      expect(item[:data][:attributes]).to have_key(:merchant_id)
+      expect(item[:data][:attributes][:merchant_id]).to be_a(Integer)
+    end
+
+    it "has a sad path for not finding one item" do
+      get "/api/v1/items/#{@item1.id + 999999}"
+      
+      expect(response).to have_http_status(:not_found)
+      
+      data = JSON.parse(response.body, symbolize_names: true)
+      
+      expect(data[:errors]).to be_an(Array)
+      expect(data[:errors][0][:status]).to eq("404")
+      expect(data[:errors][0][:title]).to include("Couldn't find Item")
+    end
   end
 
   it 'can create new items then delete them' do
