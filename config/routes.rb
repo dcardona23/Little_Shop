@@ -14,7 +14,7 @@ Rails.application.routes.draw do
   get "/api/v1/merchants/:id/invoices", to: "api/v1/invoices#index"
   patch "/api/v1/merchants/:id", to: "api/v1/merchants#update"
   get "/api/v1/merchants/:id/customers", to: "api/v1/merchant_customers#index"
-
+ 
   get "/api/v1/items", to: "api/v1/items#index"
   get "/api/v1/items/:id", to: "api/v1/items#show"
   post "/api/v1/items", to: "api/v1/items#create"
