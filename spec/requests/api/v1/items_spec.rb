@@ -2,38 +2,38 @@ require 'rails_helper'
 
 describe "items" do
   before(:each) do
-    @id = Merchant.create(
+    @merchant1 = Merchant.create(
       name: "Susan"
-    ).id
-    @id2 = Merchant.create(
+    )
+    @merchant2 = Merchant.create(
       name: "Steve"
-    ).id
+    )
     @item1 = Item.create({
       name: "apple",
       description: "is am apple",
       unit_price: 0.50,
-      merchant_id: @id
+      merchant_id: @merchant1[:id]
     })
     
     @item2 = Item.create({
       name: "cherry",
       description: "is am cherry",
       unit_price: 1.50,
-      merchant_id: @id2
+      merchant_id: @merchant2[:id]
     })
     
     @item3 = Item.create({
       name: "pear",
       description: "is am pear",
       unit_price: 0.75,
-      merchant_id: @id
+      merchant_id: @merchant1[:id]
     })
     
     @item4 = Item.create({
       name: "banana",
       description: "is am banaa",
       unit_price: 3.50,
-      merchant_id: @id2
+      merchant_id: @merchant2[:id]
     })
   end
 
@@ -123,50 +123,98 @@ describe "items" do
     end
   end
 
-  it 'can create new items then delete them' do
-    params = {
-      name: "potatoe",
-      description: "am potatoe",
-      unit_price: 3.50,
-      merchant_id: @id2
-    }
+  describe "#create and #destroy" do
+    it 'can create new items and deletes' do
+      params = {
+        name: "potatoe",
+        description: "am potatoe",
+        unit_price: 3.50,
+        merchant_id: @merchant2[:id]
+      }
 
-    post '/api/v1/items', params: {item: params}
+      post '/api/v1/items', params: {item: params}
 
-    expect(response).to be_successful
-    item_created = JSON.parse(response.body, symbolize_names: true)
-    item = item_created[:data]
-    item_id = item_created[:data][:id]
-    expect(item_created[:data]).to have_key(:id)
-    expect(item_created[:data][:id]).to be_an(String)
+      expect(response).to be_successful
+      item_created = JSON.parse(response.body, symbolize_names: true)
+      item = item_created[:data]
+      item_id = item_created[:data][:id]
+      expect(item_created[:data]).to have_key(:id)
+      expect(item_created[:data][:id]).to be_an(String)
 
-    expect(item_created[:data][:attributes]).to have_key(:name)
-    expect(item_created[:data][:attributes][:name]).to be_a(String)
+      expect(item_created[:data][:attributes]).to have_key(:name)
+      expect(item_created[:data][:attributes][:name]).to be_a(String)
 
-    expect(item_created[:data][:attributes]).to have_key(:description)
-    expect(item_created[:data][:attributes][:description]).to be_a(String)
+      expect(item_created[:data][:attributes]).to have_key(:description)
+      expect(item_created[:data][:attributes][:description]).to be_a(String)
 
-    expect(item_created[:data][:attributes]).to have_key(:unit_price)
-    expect(item_created[:data][:attributes][:unit_price]).to be_a(Float)
+      expect(item_created[:data][:attributes]).to have_key(:unit_price)
+      expect(item_created[:data][:attributes][:unit_price]).to be_a(Float)
 
-    expect(item_created[:data][:attributes]).to have_key(:merchant_id)
-    expect(item_created[:data][:attributes][:merchant_id]).to be_a(Integer)
+      expect(item_created[:data][:attributes]).to have_key(:merchant_id)
+      expect(item_created[:data][:attributes][:merchant_id]).to be_a(Integer)
 
-    get "/api/v1/items"
-    all_items = JSON.parse(response.body, symbolize_names: true)
+      get "/api/v1/items"
+      all_items = JSON.parse(response.body, symbolize_names: true)
 
-    expect(item_created[:data][:attributes][:name]).to eq("potatoe")
-    expect(item_created[:data][:attributes][:description]).to eq("am potatoe")
-    expect(all_items[:data]).to include(item)
+      expect(item_created[:data][:attributes][:name]).to eq("potatoe")
+      expect(item_created[:data][:attributes][:description]).to eq("am potatoe")
+      expect(all_items[:data]).to include(item)
 
-    delete "/api/v1/items/#{item_id.to_i}"
-    expect(response).to be_successful
+      delete "/api/v1/items/#{item_id.to_i}"
+      expect(response).to be_successful
 
-    get "/api/v1/items"
-    all_items_delete = JSON.parse(response.body, symbolize_names: true)
+      get "/api/v1/items"
+      all_items_delete = JSON.parse(response.body, symbolize_names: true)
 
-    expect(all_items_delete[:data]).not_to include(item)
+      expect(all_items_delete[:data]).not_to include(item)
+    end
 
+    describe 'has a sad path for creating' do
+      it "has invalid attributes" do
+        params = {
+          name: "potatoe",
+          description: "am potatoe",
+          unit_price: 3.50,
+          merchant_id: @merchant2[:id],
+          potatoe_style: "rotund"
+        }
+  
+        post '/api/v1/items', params: {item: params}
+  
+        expect(response).to be_successful
+        item_created = JSON.parse(response.body, symbolize_names: true)
+        item = item_created[:data]
+        expect(item_created[:data]).to have_key(:id)
+        expect(item_created[:data][:attributes]).to have_key(:name)
+        expect(item_created[:data][:attributes]).to have_key(:description)
+        expect(item_created[:data][:attributes]).to have_key(:unit_price)
+        expect(item_created[:data][:attributes]).to have_key(:merchant_id)
+        expect(item_created[:data][:attributes]).to_not have_key(:potatoe_style)
 
+        get "/api/v1/items"
+        all_items = JSON.parse(response.body, symbolize_names: true)
+        expect(item_created[:data][:attributes][:name]).to eq("potatoe")
+        expect(item_created[:data][:attributes][:description]).to eq("am potatoe")
+        expect(all_items[:data]).to include(item)
+
+      end
+
+      it "is missing an attribute" do
+        params = {
+          name: "potatoe",
+          description: "am potatoe",
+          potatoe_style: "rotund"
+        }
+  
+        post '/api/v1/items', params: {item: params}
+  
+        expect(response).not_to be_successful
+        json_response = JSON.parse(response.body)
+        expect(json_response).to have_key("error")
+        expect(json_response["error"]["status"]).to eq("422")
+        expect(json_response["error"]).to include("title" => ("param is missing or the value is empty: unit_price"))
+      end
+    end
   end
+
 end
