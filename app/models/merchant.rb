@@ -6,4 +6,8 @@ class Merchant < ApplicationRecord
   def self.sort_by_age
     order('created_at asc')
   end
+
+  def self.returned_items(status)
+    joins(:invoices).where(invoices: { status: status})
+  end
 end

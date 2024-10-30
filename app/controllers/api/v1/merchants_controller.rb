@@ -3,8 +3,9 @@ class Api::V1::MerchantsController < ApplicationController
   def index
     merchants = Merchant.all
 
+    merchants = Merchant.returned_items("returned") if params[:status] == "returned"
     merchants = merchants.sort_by_age if params[:sorted] == "age"
-
+    
     render json: MerchantIndexSerializer.new(merchants)
   end
 
@@ -16,7 +17,7 @@ class Api::V1::MerchantsController < ApplicationController
       rescue ActiveRecord::RecordInvalid => exception
         render json: {
           'message': "your query could not be completed",
-          'errors': exception.record.errors.full_messages
+          'errors': [exception.message]
       }, status: :bad_request
     end
   end
