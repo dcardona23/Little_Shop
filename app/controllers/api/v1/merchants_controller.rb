@@ -5,13 +5,14 @@ class Api::V1::MerchantsController < ApplicationController
 
     merchants = merchants.sort_by_age if params[:sorted] == "age"
 
-    render json: MerchantSerializer.new(merchants)
+    render json: MerchantIndexSerializer.new(merchants)
   end
 
   def create
       begin
         merchant = Merchant.create!(merchant_params)
-        render json: MerchantSerializer.new(merchant), status: :created
+        render json: MerchantIndexSerializer.new(merchant, attributes: {params["item_count"] => merchant.items.count}), status: :created
+
       rescue ActiveRecord::RecordInvalid => exception
         render json: {
           'message': "your query could not be completed",
@@ -22,7 +23,8 @@ class Api::V1::MerchantsController < ApplicationController
 
   def show
     merchant = Merchant.find(params[:id])
-    render json: MerchantSerializer.new(merchant)
+
+    render json: MerchantShowSerializer.new(merchant)
   end
 
   def destroy
