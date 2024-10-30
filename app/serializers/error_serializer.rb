@@ -3,7 +3,7 @@ class ErrorSerializer
     {
       errors: [
         {
-          status: status.status_code,
+          status: status,
           title: exception.message
         }
       ]

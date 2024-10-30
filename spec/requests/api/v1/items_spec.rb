@@ -118,7 +118,7 @@ describe "items" do
       data = JSON.parse(response.body, symbolize_names: true)
       
       expect(data[:errors]).to be_an(Array)
-      expect(data[:errors][0][:status]).to eq("404")
+      expect(data[:errors][0][:status]).to eq(404)
       expect(data[:errors][0][:title]).to include("Couldn't find Item")
     end
   end
@@ -144,6 +144,18 @@ describe "items" do
       expect(item[:data][:attributes][:merchant_id]).to eq(@item1.merchant_id)
     end
 
-    it "can handle sad path for"
+    it "can handle sad path for no merchant_id" do
+      updated_attributes = { merchant_id: 999999 }
+
+      patch "/api/v1/items/#{@item1.id}", params: { item: updated_attributes }
+
+      expect(response).to have_http_status(:not_found)
+
+      data = JSON.parse(response.body, symbolize_names: true)
+
+      expect(data[:errors]).to be_an(Array)
+      expect(data[:errors][0][:status]).to eq(404)
+      expect(data[:errors][0][:title]).to include("Merchant must exist")
+    end
   end
 end
