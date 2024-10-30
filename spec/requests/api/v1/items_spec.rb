@@ -122,4 +122,28 @@ describe "items" do
       expect(data[:errors][0][:title]).to include("Couldn't find Item")
     end
   end
+
+  describe "#update" do
+    it "can update items" do
+      updated_attributes = {
+        name: "I am spork",
+        description: "Fork and spoon",
+        unit_price: 1.99,
+        merchant_id: @item1.merchant_id
+      }
+
+      patch "/api/v1/items/#{@item1.id}", params: { item: updated_attributes }
+
+      expect(response).to be_successful
+
+      item = JSON.parse(response.body, symbolize_names: true)
+
+      expect(item[:data][:attributes][:name]).to eq("I am spork")
+      expect(item[:data][:attributes][:description]).to eq("Fork and spoon")
+      expect(item[:data][:attributes][:unit_price]).to eq(1.99)
+      expect(item[:data][:attributes][:merchant_id]).to eq(@item1.merchant_id)
+    end
+
+    it "can handle sad path for"
+  end
 end

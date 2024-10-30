@@ -24,13 +24,21 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def update
-    
+    begin
+      item = Item.find(params[:id])
+      item.update!(item_params)
+      render json: ItemSerializer.new(item)
+    rescue
+
+    end
   end
 
 
   private
 
-
+  def item_params
+    params.require(:item).permit(:name, :description, :unit_price, :merchant_id)
+  end
 
   def sort_items(scope)
     case params[:sorted]
