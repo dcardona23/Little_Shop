@@ -53,9 +53,24 @@ describe "Merchants" do
     Invoice.create!(customer_id: bob.id, merchant_id: @merchant1.id, status: "shipped")
     Invoice.create!(customer_id: bob.id, merchant_id: @merchant1.id, status: "shipped")
 
-  get "/api/v1/merchants/#{@merchant1.id}/invoices?status=shipped"
+    get "/api/v1/merchants/#{@merchant1.id}/invoices?status=shipped"
 
-  expect(response).to be_successful
+    expect(response).to be_successful
+  end
+
+  it 'can update a merchant' do
+    id = @merchant1.id
+    old_merchant_name = @merchant1.name
+    merchant_params = { name: "Scary Shoppe of Horrors" }
+    headers = { "CONTENT_TYPE" => "application/json" }
+    
+    patch "/api/v1/merchants/#{id}", headers: headers, params: JSON.generate({merchant: merchant_params})
+    
+    @merchant1.reload
+
+    expect(response).to be_successful
+    expect(@merchant1.name).to_not eq(old_merchant_name)
+    expect(@merchant1.name).to eq("Scary Shoppe of Horrors")
   end
 
 end
