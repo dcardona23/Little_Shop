@@ -24,22 +24,36 @@ class Api::V1::ItemsController < ApplicationController
   end
   
   def create
-    item = Item.create(item_param)
-    render json: ItemSerializer.new(item), status: :created
+    begin
+      item_params = item_param
+      render json: ItemSerializer.new(Item.create(item_params)), status: :created
+    rescue ActionController::BadRequest => error
+      render json: error.message, status: :unprocessable_entity
+    end
   end
 
   def destroy
     render json: Item.delete(params[:id]), status: :no_content
   end
 
+ 
 
   private
 
   def item_param
-    params.require(:item).permit(:name, :description, :unit_price, :merchant_id)
+    begin
+      item_params = params.require(:item)
+      item_params.require(:name)
+      item_params.require(:description)
+      item_params.require(:unit_price)
+      item_params.require(:merchant_id)
+      item_params.permit(:name, :description, :unit_price, :merchant_id)
+    rescue ActionController::ParameterMissing => exception
+      raise ActionController::BadRequest.new(
+        { error: { status: "422", title: exception.message } }.to_json
+      )
+    end
   end
-
-
 
   def sort_items(scope)
     case params[:sorted]
@@ -49,5 +63,4 @@ class Api::V1::ItemsController < ApplicationController
       scope
     end
   end
-
 end
