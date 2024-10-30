@@ -46,4 +46,16 @@ describe "Merchants" do
     expect(merchants[:data][1][:attributes][:name]).to eq("Large Shop of Wonders")
     expect(merchants[:data][2][:attributes][:name]).to eq("Wizard's Chest")
   end
+
+  it 'returns all invoices for a given merchant' do
+    merchant = Merchant.create!(name: "Test Merchant")
+    bob = Customer.create!(first_name: "Bob", last_name: "Tucker")
+    Invoice.create!(customer_id: bob.id, merchant_id: @merchant1.id, status: "shipped")
+    Invoice.create!(customer_id: bob.id, merchant_id: @merchant1.id, status: "shipped")
+
+  get "/api/v1/merchants/#{@merchant1.id}/invoices?status=shipped"
+
+  expect(response).to be_successful
+  end
+
 end
