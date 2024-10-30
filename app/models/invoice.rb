@@ -5,6 +5,6 @@ class Invoice < ApplicationRecord
   has_many :invoiceItems
 
   def self.find_by_status(input)
-    where("status = ?", input)
+    where(status: input)
   end
 end

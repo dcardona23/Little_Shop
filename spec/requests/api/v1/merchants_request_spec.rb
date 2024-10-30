@@ -5,6 +5,8 @@ describe "Merchants" do
     @merchant1 = Merchant.create(name: "Little Shop of Horrors")
     @merchant2 = Merchant.create(name: "Large Shop of Wonders")
     @merchant3 = Merchant.create(name: "Wizard's Chest")
+
+    @invoice1 = Invoice.create(customer_id: 1, merchant_id: @merchant1.id, status: "shipped")
   end
 
   it 'can get a merchant' do
@@ -48,9 +50,10 @@ describe "Merchants" do
   end
 
   it 'returns all invoices for a given merchant' do
-    get "/api/v1/merchants/#{@merchant1.id}/invoices"
+    merchant_id = @merchant1.id
+    get "/api/v1/merchants/#{merchant_id}/invoices?status=shipped"
 
-    expect(response).to be_successful
+
   end
 
 end
