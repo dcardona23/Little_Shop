@@ -3,9 +3,10 @@ class Api::V1::InvoicesController < ApplicationController
 	def index
 		begin
 			merchant = Merchant.find(params[:id])
-			invoices = Invoice.where(merchant_id: merchant.id).find_by_status(params[:status])
+			invoices = Invoice.where(merchant_id: merchant.id).find_by_status(params[:status]) if (params[:status])
+			invoices = Invoice.where(merchant_id: merchant.id) if (!params[:status])
 
-			if invoices.empty? || !merchant.id
+			if invoices.empty? 
 				render json: {
 					'message': "your query could not be completed",
 					'errors': [
