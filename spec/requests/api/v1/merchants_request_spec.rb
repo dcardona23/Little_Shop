@@ -46,4 +46,11 @@ describe "Merchants" do
     expect(merchants[:data][1][:attributes][:name]).to eq("Large Shop of Wonders")
     expect(merchants[:data][2][:attributes][:name]).to eq("Wizard's Chest")
   end
+
+  it 'returns all invoices for a given merchant' do
+    get "/api/v1/merchants/#{@merchant1.id}/invoices"
+
+    expect(response).to be_successful
+  end
+
 end
