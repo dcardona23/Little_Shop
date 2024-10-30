@@ -15,7 +15,7 @@ describe 'Finding Customers By Merchant' do
     invoice3 = Invoice.create(customer_id: customer1.id, merchant_id: m2id, status: "shipped")
     
     get "/api/v1/merchants/#{m1id}/customers"
-    firstMerchant = JSON.parse(response.body)
+    firstMerchant = JSON.parse(response.body) 
 
     expect(response).to be_successful
     expect(firstMerchant["data"][0]["type"]).to eq("customer")
