@@ -11,7 +11,7 @@ class Api::V1::MerchantsController < ApplicationController
   def create
       begin
         merchant = Merchant.create!(merchant_params)
-        render json: MerchantIndexSerializer.new(merchant, attributes: {params["item_count"] => merchant.items.count}), status: :created
+        render json: MerchantShowSerializer.new(merchant), status: :created
 
       rescue ActiveRecord::RecordInvalid => exception
         render json: {
