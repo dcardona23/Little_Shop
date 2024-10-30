@@ -23,6 +23,9 @@ class Api::V1::ItemsController < ApplicationController
     end
   end
 
+  def update
+    
+  end
 
 
   private
