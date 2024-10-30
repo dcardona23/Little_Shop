@@ -58,7 +58,7 @@ describe "items_merchants" do
       expect(merchant2[:data][:attributes][:name]).to eq(@merchant2[:name])
     end
 
-    it "can get a merchant associated to an item (Sad path)" do
+    it "can't get a merchant associated to an item (Sad path)" do
       get "/api/v1/items/#{@item1.id + 999999}"
       
       expect(response).to have_http_status(:not_found)
