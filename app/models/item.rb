@@ -6,5 +6,11 @@ class Item < ApplicationRecord
   validates_presence_of :description, :presence => true
   validates_presence_of :unit_price, :presence => true
 
-
+  def self.sort_items(scope, params)
+    if params[:sorted].present? && params[:sorted] == 'price'
+      scope.order(unit_price: :asc)
+    else
+      scope
+    end
+  end
 end
