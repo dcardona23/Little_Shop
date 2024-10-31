@@ -18,7 +18,6 @@ RSpec.describe Invoice do
       invoice3 = Invoice.create!(customer_id: bob.id, merchant_id: merchant1.id, status: "shipped")
       invoice4 = Invoice.create!(customer_id: bob.id, merchant_id: merchant1.id, status: "packaged")
 
-    
       invoices = Invoice.find_by_status("shipped")
 
       expect(invoices.length).to eq(3)

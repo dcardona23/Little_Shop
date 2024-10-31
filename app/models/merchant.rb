@@ -8,6 +8,6 @@ class Merchant < ApplicationRecord
   end
 
   def self.item_status(status)
-    joins(:invoices).where(invoices: { status: status})
+    joins(:invoices).where(invoices: { status: status }).distinct
   end
 end
