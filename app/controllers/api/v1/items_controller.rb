@@ -13,12 +13,25 @@ class Api::V1::ItemsController < ApplicationController
     item = Item.find(params[:id])
     render json: ItemSerializer.new(item)
   end
+  
+  def create
+    begin
+      item_params = item_param
+      render json: ItemSerializer.new(Item.create(item_params)), status: :created
+    rescue ActionController::BadRequest => error
+      render json: error.message, status: :unprocessable_entity
+    end
+  end
+
 
   def update
-    # binding.pry
     item = Item.find(params[:id])
     item.update!(item_params)
     render json: ItemSerializer.new(item)
+  end
+  
+  def destroy
+    render json: Item.delete(params[:id]), status: :no_content
   end
 
   private
@@ -26,7 +39,7 @@ class Api::V1::ItemsController < ApplicationController
   def item_params
     params.require(:item).permit(:name, :description, :unit_price, :merchant_id)
   end
-
+  
   def sort_items(scope)
     case params[:sorted]
     when 'price'
@@ -35,6 +48,7 @@ class Api::V1::ItemsController < ApplicationController
       scope
     end
   end
+
 
   def record_not_found(exception)
     render json: ErrorSerializer.format_error(exception, 404), status: :not_found
