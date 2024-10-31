@@ -15,15 +15,10 @@ class Api::V1::ItemsController < ApplicationController
   end
   
   def create
-    begin
-      item_params = item_param
-      render json: ItemSerializer.new(Item.create(item_params)), status: :created
-    rescue ActionController::BadRequest => error
-      render json: error.message, status: :unprocessable_entity
-    end
+    item = Item.create!(item_params)
+    render json: ItemSerializer.new(item), status: :created
   end
-
-
+  
   def update
     item = Item.find(params[:id])
     item.update!(item_params)
@@ -48,7 +43,6 @@ class Api::V1::ItemsController < ApplicationController
       scope
     end
   end
-
 
   def record_not_found(exception)
     render json: ErrorSerializer.format_error(exception, 404), status: :not_found
