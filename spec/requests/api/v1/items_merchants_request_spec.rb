@@ -66,7 +66,7 @@ describe "items_merchants" do
       data = JSON.parse(response.body, symbolize_names: true)
       
       expect(data[:errors]).to be_an(Array)
-      expect(data[:errors][0][:status]).to eq("404")
+      expect(data[:errors][0][:status]).to eq(404)
       expect(data[:errors][0][:title]).to include("Couldn't find Item")
     end
   end
