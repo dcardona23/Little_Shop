@@ -18,7 +18,7 @@ class Api::V1::MerchantsController < ApplicationController
         render json: {
           'message': "your query could not be completed",
           'errors': [exception.message]
-      }, status: :bad_request
+      }, status: 422
     end
   end
 
