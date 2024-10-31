@@ -3,7 +3,7 @@ class Api::V1::MerchantsController < ApplicationController
   def index
     merchants = Merchant.all
 
-    merchants = Merchant.returned_items("returned") if params[:status] == "returned"
+    merchants = Merchant.item_status("returned") if params[:status] == "returned"
     merchants = merchants.sort_by_age if params[:sorted] == "age"
     
     render json: MerchantIndexSerializer.new(merchants)

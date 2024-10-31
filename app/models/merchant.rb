@@ -7,7 +7,7 @@ class Merchant < ApplicationRecord
     order('created_at asc')
   end
 
-  def self.returned_items(status)
+  def self.item_status(status)
     joins(:invoices).where(invoices: { status: status})
   end
 end
