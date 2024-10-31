@@ -25,8 +25,5 @@ RSpec.describe Merchant do
       expect(sorted_by_age[1].name).to eq("Large Shop of Wonders")
       expect(sorted_by_age[2].name).to eq("Wizard's Chest")
     end
-
-    
-
   end
 end
