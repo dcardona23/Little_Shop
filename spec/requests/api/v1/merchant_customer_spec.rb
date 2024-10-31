@@ -27,7 +27,7 @@ describe 'Finding Customers By Merchant' do
 
     expect(response).to be_successful;
     expect(secondMerchant["data"][0]["type"]).to eq("customer")
-    # binding.pry;
+
     expect(secondMerchant["data"][0]["attributes"]["first_name"]).to eq("Roger")
 
     # SAD PATH
