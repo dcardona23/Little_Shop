@@ -7,6 +7,16 @@ describe "Merchants" do
     @merchant3 = Merchant.create(name: "Wizard's Chest")
   end
 
+  it 'can get all merchants, sorted by time of creation' do
+    get '/api/v1/merchants?sorted=age'
+    merchants = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response).to be_successful
+    expect(merchants[:data][0][:attributes][:name]).to eq("Little Shop of Horrors")
+    expect(merchants[:data][1][:attributes][:name]).to eq("Large Shop of Wonders")
+    expect(merchants[:data][2][:attributes][:name]).to eq("Wizard's Chest")
+  end
+
   it 'can get a merchant' do
     get "/api/v1/merchants/#{@merchant1.id}"
     merchant = JSON.parse(response.body)
@@ -37,27 +47,6 @@ describe "Merchants" do
       expect{Merchant.find(@merchant1.id)}.to raise_error(ActiveRecord::RecordNotFound)
     end
 
-  it 'can sort all merchants by time of creation' do
-    get '/api/v1/merchants?sorted=age'
-    merchants = JSON.parse(response.body, symbolize_names: true)
-
-    expect(response).to be_successful
-    expect(merchants[:data][0][:attributes][:name]).to eq("Little Shop of Horrors")
-    expect(merchants[:data][1][:attributes][:name]).to eq("Large Shop of Wonders")
-    expect(merchants[:data][2][:attributes][:name]).to eq("Wizard's Chest")
-  end
-
-  it 'returns all invoices for a given merchant' do
-    merchant = Merchant.create!(name: "Test Merchant")
-    bob = Customer.create!(first_name: "Bob", last_name: "Tucker")
-    Invoice.create!(customer_id: bob.id, merchant_id: @merchant1.id, status: "shipped")
-    Invoice.create!(customer_id: bob.id, merchant_id: @merchant1.id, status: "shipped")
-
-    get "/api/v1/merchants/#{@merchant1.id}/invoices?status=shipped"
-
-    expect(response).to be_successful
-  end
-
   it 'can update a merchant' do
     id = @merchant1.id
     old_merchant_name = @merchant1.name
@@ -72,5 +61,23 @@ describe "Merchants" do
     expect(@merchant1.name).to_not eq(old_merchant_name)
     expect(@merchant1.name).to eq("Scary Shoppe of Horrors")
   end
+end
 
+  describe 'sad paths' do
+    it 'returns a 422 error if a merchant can not be created' do
+      merchant_params = {
+        name: ""
+        }
+  
+      headers = {"CONTENT_TYPE" => "application/json"}
+      post "/api/v1/merchants", headers: headers, params: JSON.generate(merchant: merchant_params)
+  
+      expect(response).not_to be_successful
+      expect(response.status).to eq(422)
+    
+      data = JSON.parse(response.body, symbolize_names: true)
+  
+      expect(data[:errors]).to be_an(Array)
+      expect(data[:errors][0]).to eq("Validation failed: Name can't be blank")
+  end
 end
