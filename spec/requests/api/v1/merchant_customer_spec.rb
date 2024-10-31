@@ -27,7 +27,8 @@ describe 'Finding Customers By Merchant' do
 
     expect(response).to be_successful;
     expect(secondMerchant["data"][0]["type"]).to eq("customer")
-    expect(secondMerchant["data"][1]["attributes"]["first_name"]).to eq("Roger")
+
+    expect(secondMerchant["data"][0]["attributes"]["first_name"]).to eq("Roger")
 
     # SAD PATH
     get "/api/v1/merchants/#{54321}/customers"
@@ -38,7 +39,7 @@ describe 'Finding Customers By Merchant' do
     data = JSON.parse(response.body, symbolize_names: true) 
     
     expect(data[:errors]).to be_a(Array)
-    expect(data[:errors].first[:status]).to eq("404")
-    expect(data[:errors].first[:message]).to eq("Couldn't find Merchant with 'id'=54321")
+    expect(data[:errors].first[:status]).to eq(404)
+    expect(data[:errors].first[:title]).to eq("Couldn't find Merchant with 'id'=54321")
   end
 end
