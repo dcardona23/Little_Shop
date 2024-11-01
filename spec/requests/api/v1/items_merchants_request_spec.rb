@@ -59,16 +59,17 @@ describe "items_merchants" do
     end
 
     it "can't get a merchant associated to an item (Sad path)" do
-      get "/api/v1/items/#{@item1.id + 999999}"
-      
+      get "/api/v1/items/#{@item1.id + 999999}/merchant"
+
       expect(response).to have_http_status(:not_found)
       
       data = JSON.parse(response.body, symbolize_names: true)
       
+      expect(data[:message]).to eq("Your query could not be completed")
+
       expect(data[:errors]).to be_an(Array)
       expect(data[:errors][0][:status]).to eq(404)
       expect(data[:errors][0][:title]).to include("Couldn't find Item")
     end
   end
-
 end

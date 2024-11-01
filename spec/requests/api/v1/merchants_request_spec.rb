@@ -61,23 +61,47 @@ describe "Merchants" do
     expect(@merchant1.name).to_not eq(old_merchant_name)
     expect(@merchant1.name).to eq("Scary Shoppe of Horrors")
   end
-end
 
-  describe 'sad paths' do
-    it 'returns a 422 error if a merchant can not be created' do
-      merchant_params = {
-        name: ""
-        }
-  
-      headers = {"CONTENT_TYPE" => "application/json"}
-      post "/api/v1/merchants", headers: headers, params: JSON.generate(merchant: merchant_params)
-  
-      expect(response).not_to be_successful
-      expect(response.status).to eq(422)
+describe 'sad paths' do
+  it 'has a sad path for not finding a merchant' do
+    get "/api/v1/merchants/99999999"
+
+    expect(response).to have_http_status(:not_found)
+
+    data = JSON.parse(response.body, symbolize_names: true)
+
+    expect(data[:message]).to eq("Your query could not be completed")
+    expect(data[:errors]).to be_an(Array)
+    expect(data[:errors][0][:status]).to eq("404")
+    expect(data[:errors][0][:title]).to include("Couldn't find Merchant")
+  end
+
+  it 'has a sad path for creating a merchant without required parameters' do
+    headers = { "CONTENT_TYPE" => "application/json" }
+    post "/api/v1/merchants", headers: headers, params: JSON.generate({})
+
+    expect(response).to have_http_status(:bad_request)
+
+    data = JSON.parse(response.body, symbolize_names: true)
     
-      data = JSON.parse(response.body, symbolize_names: true)
-  
-      expect(data[:errors]).to be_an(Array)
-      expect(data[:errors][0]).to eq("Validation failed: Name can't be blank")
+    expect(data[:message]).to eq("Your query could not be completed")
+    expect(data[:errors]).to be_an(Array)
+    expect(data[:errors][0]).to eq("param is missing or the value is empty: merchant")
+  end
+
+  it 'has a sad path for trying to update a merchant with invalid paramaters' do
+    id = @merchant1.id
+    merchant_params = { name: "" }
+    headers = { "CONTENT_TYPE" => "application/json" }
+
+    patch "/api/v1/merchants/#{id}", headers: headers, params: JSON.generate({ merchant: merchant_params })
+
+    expect(response).to have_http_status(:bad_request)
+
+    data = JSON.parse(response.body, symbolize_names: true)
+
+    expect(data[:message]).to eq("Your query could not be completed")
+    expect(data[:errors]).to be_an(Array)
+    expect(data[:errors][0]).to eq("Name can't be blank")
   end
 end

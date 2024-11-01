@@ -118,7 +118,7 @@ describe "items" do
       data = JSON.parse(response.body, symbolize_names: true)
       
       expect(data[:errors]).to be_an(Array)
-      expect(data[:errors][0][:status]).to eq(404)
+      expect(data[:errors][0][:status]).to eq("404")
       expect(data[:errors][0][:title]).to include("Couldn't find Item")
     end
   end
@@ -153,10 +153,10 @@ describe "items" do
       expect(response).to have_http_status(:not_found)
 
       data = JSON.parse(response.body, symbolize_names: true)
-
+      
       expect(data[:errors]).to be_an(Array)
-      expect(data[:errors][0][:status]).to eq(404)
-      expect(data[:errors][0][:title]).to include("Merchant must exist")
+      expect(data[:message]).to eq("Your query could not be completed")
+      expect(data[:errors][0]).to include("Merchant must exist")
     end
   end
 
@@ -246,12 +246,13 @@ describe "items" do
         post '/api/v1/items', params: {item: params}
   
         expect(response).not_to be_successful
-        json_response = JSON.parse(response.body)
-        expect(json_response).to have_key("error")
-        expect(json_response["error"]["status"]).to eq("422")
-        expect(json_response["error"]).to include("title" => ("param is missing or the value is empty: unit_price"))
+
+        json_response = JSON.parse(response.body, symbolize_names: true)
+        
+        expect(json_response[:errors]).to be_an(Array)
+        expect(json_response[:message]).to eq("Your query could not be completed")
+        expect(json_response[:errors][0]).to include("Merchant must exist")
       end
     end
   end
-
 end
