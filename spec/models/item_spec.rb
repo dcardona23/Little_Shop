@@ -113,16 +113,46 @@ RSpec.describe Item do
       expect(Item.find_by_name("copper")).to include(item5, item6, item7)
     end
 
-    it 'find a merchant by case insensitive name fragment' do 
-      merchant1 = Merchant.create(name: "Apple")
-      merchant2 = Merchant.create(name: "Bapple")
-      merchant3 = Merchant.create(name: "Capple")
-      merchant4 = Merchant.create(name: "Dapple")
-
-      expect(Merchant.find_by_name("APP").name).to eq("Apple")
-      expect(Merchant.find_by_name("apP").name).to eq("Apple")
-      expect(Merchant.find_by_name("aPp").name).to eq("Apple")
-      expect(Merchant.find_by_name("aPP").name).to eq("Apple")
+    it 'find all items by case insensitive name fragment' do 
+      item5 = Item.create({
+        name: "Copper pot", 
+        description: Faker::Lorem.sentence,
+        unit_price: Faker::Commerce.price(range: 1.0..55.00),
+        merchant_id: @merchant1[:id]
+      })
+      
+      item6 = Item.create({
+        name: "Copper kettle",
+        description: Faker::Lorem.sentence,
+        unit_price: Faker::Commerce.price(range: 1.0..55.00),
+        merchant_id: @merchant2[:id]
+      })
+      
+      item7 = Item.create({
+        name: "copper plate",
+        description: Faker::Lorem.sentence,
+        unit_price: Faker::Commerce.price(range: 1.0..55.00),
+        merchant_id: @merchant1[:id]
+      })
+  
+      item8 = Item.create({
+        name: "iron fist",
+        description: Faker::Lorem.sentence,
+        unit_price: Faker::Commerce.price(range: 1.0..55.00),
+        merchant_id: @merchant1[:id]
+      })
+  
+      item9 = Item.create({
+        name: "silver sword",
+        description: Faker::Lorem.sentence,
+        unit_price: Faker::Commerce.price(range: 1.0..55.00),
+        merchant_id: @merchant1[:id]
+      })
+        
+      expect(Item.find_by_name("copPER")).to include(item5, item6, item7)
+      expect(Item.find_by_name("COPper")).to include(item5, item6, item7)
+      expect(Item.find_by_name("cOPPer")).to include(item5, item6, item7)
+      expect(Item.find_by_name("cOpPeR")).to include(item5, item6, item7)
     end
   end
 end
