@@ -33,41 +33,31 @@ describe "MerchantInvoices" do
     expect(response).to be_successful
 
     response_data = JSON.parse(response.body, symbolize_names: true)
-    # binding.pry
+    
     expect(response_data[:data].count).to eq(1)
   end
 
-  describe 'sad paths' do 
-    context 'when the merchant does not exist' do
-      it 'returns an error for an invalid merchant id' do
-        merchant = Merchant.create!(name: "Test Merchant")
-        get "/api/v1/merchants/#{merchant.id + 1}/invoices?status=returned"
-    
-        expect(response).not_to be_successful
-        expect(response).to have_http_status(:not_found)
-    
-        data = JSON.parse(response.body, symbolize_names: true)
+describe 'sad paths' do 
+  it 'has a sad path for not finding a status' do
+    get "/api/v1/merchants/#{@merchant1.id}/invoices", params: { status: "no_status" }
 
-        expect(data[:errors]).to be_an(Array)
-        expect(data[:message]).to eq("your query could not be completed")
-        expect(data[:errors][0]).to eq("merchant not found")
-      end
-    end
+    expect(response).to have_http_status(:not_found)
 
-    context 'when there are no invoices with the specified status' do
-      it 'returns an error if there are no invoices with the specified status' do
-        merchant = Merchant.create!(name: "Test Merchant")
-        get "/api/v1/merchants/#{merchant.id}/invoices?status=returned"
-        
-        expect(response).not_to be_successful
-        expect(response.status).to eq(404)
-    
-        data = JSON.parse(response.body, symbolize_names: true)
-    
-        expect(data[:errors]).to be_an(Array)
-        expect(data[:message]).to eq("your query could not be completed")
-        expect(data[:errors][0]).to eq("no invoices found with status returned")
-      end
-    end 
+    response_data = JSON.parse(response.body, symbolize_names: true)
+   
+    expect(response_data[:message]).to eq("Your query could not be completed")
+    expect(response_data[:errors][0][:title]).to eq("No invoices found with status no_status")
+  end
+
+  it 'has a sad path for when the merchant id is not found' do
+    get "/api/v1/merchants/99999999/invoices"
+
+    expect(response).to have_http_status(:not_found)
+    response_data = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response_data[:message]).to eq("Your query could not be completed")
+    expect(response_data[:errors]).to be_an(Array)
+    expect(response_data[:errors][0][:status]).to eq("404")
+    expect(response_data[:errors][0][:title]).to include("Couldn't find Merchant")
   end
 end

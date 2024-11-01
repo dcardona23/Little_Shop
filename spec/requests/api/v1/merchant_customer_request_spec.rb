@@ -42,4 +42,16 @@ describe 'Finding Customers By Merchant' do
     expect(data[:errors].first[:status]).to eq(404)
     expect(data[:errors].first[:title]).to eq("Couldn't find Merchant with 'id'=54321")
   end
+
+  it 'has a sad path for when a merchant is not found' do
+    get "/api/v1/merchants/9999999/customers" # ID 0 should not exist
+
+    expect(response).to have_http_status(:not_found)
+    error_response = JSON.parse(response.body, symbolize_names: true)
+
+    expect(error_response[:message]).to eq("Your query could not be completed")
+    expect(error_response[:errors]).to be_an(Array)
+    expect(error_response[:errors].first[:status]).to eq("404")
+    expect(error_response[:errors].first[:title]).to include("Couldn't find Merchant")
+  end
 end
