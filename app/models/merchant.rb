@@ -12,9 +12,6 @@ class Merchant < ApplicationRecord
   end
 
   def self.find_by_name(input)
-    merchants = where("name ILIKE ?", "%#{input}%")
-    if merchants.any?
-      merchant = merchants.order(:name).first
-    end
+    where("name ILIKE ?", "%#{input}%").order(:name).first
   end
 end
