@@ -72,6 +72,45 @@ RSpec.describe Item do
       expect(items_sorted_not[1][:unit_price]).to eq(1.50)
       expect(items_sorted_not[2][:unit_price]).to eq(0.75)
       expect(items_sorted_not[3][:unit_price]).to eq(3.50)
+    end
+
+    it 'filters by min price' do
+      params = {min_price: 0.75}
+      items_filtered = Item.min_filter(Item.all, params)
+      expect(items_filtered.count).to eq(3)
+      expect(items_filtered.include?(@item1)).to eq(false)
+    end
+
+    it 'filters by max price' do 
+      params = {max_price: 2.00}
+      items_filtered = Item.max_filter(Item.all, params)
+      expect(items_filtered.count).to eq(3)
+      expect(items_filtered.include?(@item4)).to eq(false)
+    end
+
+    it 'can filter both min and max' do
+      params = {max_price: 2.00, min_price: 0.60}
+      items_filtered = Item.filter_items(Item.all, params)
+      expect(items_filtered.count).to eq(2)
+      expect(items_filtered.include?(@item1)).to eq(false)
+      expect(items_filtered.include?(@item4)).to eq(false)
+    end
+
+    it 'wont filter if no params are given (sadpath?)' do
+      params = {}
+
+      items_filtered = Item.min_filter(Item.all, params)
+      expect(items_filtered.count).to eq(4)
+      expect(items_filtered.include?(@item1)).to eq(true)
+
+      items_filtered = Item.max_filter(Item.all, params)
+      expect(items_filtered.count).to eq(4)
+      expect(items_filtered.include?(@item4)).to eq(true)
+
+      items_filtered = Item.filter_items(Item.all, params)
+      expect(items_filtered.count).to eq(4)
+      expect(items_filtered.include?(@item1)).to eq(true)
+      expect(items_filtered.include?(@item4)).to eq(true)
 
     end
   end
