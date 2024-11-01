@@ -34,7 +34,7 @@ class Item < ApplicationRecord
 
   def self.min_filter(scope, params)
     filter = params[:min_price]
-    if params[:min_price].present? && filter.present? ## and is a positiive value 
+    if params[:min_price].present? && filter.present?
       scope.where("unit_price >= ?", "#{filter}")
     else
       scope
