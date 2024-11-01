@@ -70,5 +70,15 @@ RSpec.describe Merchant do
       expect(merchants_with_packaged).to include(merchant2)
     end
 
+    it 'finds merchants by name fragment and returns the first orderd alphabetically' do
+      merchant1 = Merchant.create(name: "Apple")
+      merchant2 = Merchant.create(name: "Bapple")
+      merchant3 = Merchant.create(name: "Capple")
+      merchant4 = Merchant.create(name: "Dapple")
+      merchant5 = Merchant.create(name: "Eon")
+      merchant6 = Merchant.create(name: "Fabulous")
+
+      expect(Merchant.find_by_name("app").name).to eq("Apple")
+    end
   end
 end
