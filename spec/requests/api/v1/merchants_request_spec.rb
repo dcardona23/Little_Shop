@@ -62,6 +62,7 @@ describe "Merchants" do
     expect(@merchant1.name).to eq("Scary Shoppe of Horrors")
   end
 
+describe 'sad paths' do
   it 'has a sad path for not finding a merchant' do
     get "/api/v1/merchants/99999999"
 

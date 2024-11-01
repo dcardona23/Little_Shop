@@ -37,6 +37,7 @@ describe "MerchantInvoices" do
     expect(response_data[:data].count).to eq(1)
   end
 
+describe 'sad paths' do 
   it 'has a sad path for not finding a status' do
     get "/api/v1/merchants/#{@merchant1.id}/invoices", params: { status: "no_status" }
 

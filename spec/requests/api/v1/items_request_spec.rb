@@ -246,6 +246,7 @@ describe "items" do
         post '/api/v1/items', params: {item: params}
   
         expect(response).not_to be_successful
+
         json_response = JSON.parse(response.body, symbolize_names: true)
         
         expect(json_response[:errors]).to be_an(Array)
