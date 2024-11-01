@@ -68,7 +68,7 @@ describe "items_merchants" do
       expect(data[:message]).to eq("Your query could not be completed")
 
       expect(data[:errors]).to be_an(Array)
-      expect(data[:errors][0][:status]).to eq(404)
+      expect(data[:errors][0][:status]).to eq("404")
       expect(data[:errors][0][:title]).to include("Couldn't find Item")
     end
   end
