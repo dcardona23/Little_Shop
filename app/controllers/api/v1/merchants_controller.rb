@@ -4,22 +4,8 @@ class Api::V1::MerchantsController < ApplicationController
   rescue_from ActionController::ParameterMissing, with: :record_parameter_missing
 
   def index
-    merchants = Merchant.all
-
-    merchants = merchants.item_status(params[:status]) if params[:status]
-    merchants = merchants.sort_by_age if params[:sorted] == "age"
-    
+    merchants = Merchant.filter_merchants(Merchant.all, params)
     render json: MerchantIndexSerializer.new(merchants)
-  end
-
-  def fetch_by_name
-    merchant = Merchant.find_by_name(params[:name])
-
-    if merchant 
-      render json: MerchantShowSerializer.new(merchant)
-    else
-      render json: { data: {} }, status: :ok
-    end
   end
 
   def show
