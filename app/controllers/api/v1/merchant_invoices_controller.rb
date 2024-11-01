@@ -18,13 +18,13 @@ class Api::V1::MerchantInvoicesController < ApplicationController
 	
 			render json: MerchantInvoiceSerializer.new(invoices)
 	
-			rescue ActiveRecord::RecordNotFound
-				render json: {
-					'message': "your query could not be completed",
-					'errors': [
-						"merchant not found"
-						]
-					}, status: :not_found
+		rescue ActiveRecord::RecordNotFound
+			render json: {
+				'message': "your query could not be completed",
+				'errors': [
+					"merchant not found"
+					]
+				}, status: :not_found
 		end
 	end
 end

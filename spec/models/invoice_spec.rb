@@ -9,6 +9,10 @@ RSpec.describe Invoice do
     it {should have_many :invoiceItems}
   end
 
+  describe 'validations' do
+    it {should validate_presence_of(:status)}
+  end
+
   describe 'class methods' do
     it 'finds all invoices for a particular merchant by status' do
       merchant1 = Merchant.create(name: "Little Shop of Horrors")

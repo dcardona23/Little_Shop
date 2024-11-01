@@ -10,15 +10,15 @@ class Api::V1::MerchantsController < ApplicationController
   end
 
   def create
-      begin
-        merchant = Merchant.create!(merchant_params)
-        render json: MerchantShowSerializer.new(merchant), status: :created
+    begin
+      merchant = Merchant.create!(merchant_params)
+      render json: MerchantShowSerializer.new(merchant), status: :created
 
-      rescue ActiveRecord::RecordInvalid => exception
-        render json: {
-          'message': "your query could not be completed",
-          'errors': [exception.message]
-      }, status: 422
+    rescue ActiveRecord::RecordInvalid => exception
+      render json: {
+        'message': "your query could not be completed",
+        'errors': [exception.message]
+    }, status: 422
     end
   end
 
