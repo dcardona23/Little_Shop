@@ -1,30 +1,20 @@
 class Api::V1::MerchantInvoicesController < ApplicationController
+  rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
-	def index
-		begin
-			merchant = Merchant.find(params[:id])
-			invoices = merchant.invoices.find_by_status(params[:status]) if (params[:status])
-			invoices = merchant.invoices if (!params[:status])
+  def index
+    merchant = Merchant.find(params[:id])
+    invoices = params[:status] ? merchant.invoices.where(status: params[:status]) : merchant.invoices
 
-			if invoices.empty? 
-				render json: {
-					'message': "your query could not be completed",
-					'errors': [
-						"no invoices found with status #{params[:status]}"
-					]
-				}, status: :not_found
-				return 
-			end
-	
-			render json: MerchantInvoiceSerializer.new(invoices)
-	
-			rescue ActiveRecord::RecordNotFound
-				render json: {
-					'message': "your query could not be completed",
-					'errors': [
-						"merchant not found"
-						]
-					}, status: :not_found
-		end
-	end
+    if invoices.present?
+      render json: MerchantInvoiceSerializer.new(invoices)
+    else
+      render json: ErrorSerializer.format_error(StandardError.new("No invoices found with status #{params[:status]}"), 404), status: :not_found
+    end
+  end
+
+  private
+
+  def record_not_found(exception)
+    render json: ErrorSerializer.format_error(exception, 404), status: :not_found
+  end
 end
