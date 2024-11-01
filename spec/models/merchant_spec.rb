@@ -80,5 +80,17 @@ RSpec.describe Merchant do
 
       expect(Merchant.find_by_name("app").name).to eq("Apple")
     end
+
+    it 'find a merchant by case insensitive name fragment' do 
+      merchant1 = Merchant.create(name: "Apple")
+      merchant2 = Merchant.create(name: "Bapple")
+      merchant3 = Merchant.create(name: "Capple")
+      merchant4 = Merchant.create(name: "Dapple")
+
+      expect(Merchant.find_by_name("APP").name).to eq("Apple")
+      expect(Merchant.find_by_name("apP").name).to eq("Apple")
+      expect(Merchant.find_by_name("aPp").name).to eq("Apple")
+      expect(Merchant.find_by_name("aPP").name).to eq("Apple")
+    end
   end
 end
