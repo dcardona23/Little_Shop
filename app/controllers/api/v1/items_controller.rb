@@ -5,18 +5,9 @@ class Api::V1::ItemsController < ApplicationController
   def index
     items = Item.all
     items = Item.sort_items(items, params)
+    items = Item.filter_items(items, params)
     options = { meta: { count: items.count } }
     render json: ItemSerializer.new(items, options)
-  end
-
-  def fetch_by_name
-    items = Item.find_by_name(params[:name])
-
-    if items 
-      render json: ItemSerializer.new(items)
-    else
-      render json: { data: {} }, status: :ok
-    end
   end
 
   def show
@@ -52,4 +43,6 @@ class Api::V1::ItemsController < ApplicationController
   def record_invalid(exception)
     render json: ErrorSerializer.format_error(exception, 404), status: :not_found
   end
+
+  
 end
