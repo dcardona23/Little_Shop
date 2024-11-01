@@ -9,6 +9,16 @@ class Api::V1::ItemsController < ApplicationController
     render json: ItemSerializer.new(items, options)
   end
 
+  def fetch_by_name
+    items = Item.find_by_name(params[:name])
+
+    if items 
+      render json: ItemSerializer.new(items)
+    else
+      render json: { data: {} }, status: :ok
+    end
+  end
+
   def show
     item = Item.find(params[:id])
     render json: ItemSerializer.new(item)
