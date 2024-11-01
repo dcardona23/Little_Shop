@@ -14,6 +14,7 @@ describe 'Finding Customers By Merchant' do
     invoice2 = Invoice.create(customer_id: customer2.id, merchant_id: m2id, status: "shipped")
     invoice3 = Invoice.create(customer_id: customer1.id, merchant_id: m2id, status: "shipped")
     
+    # HAPPY PATH
     get "/api/v1/merchants/#{m1id}/customers"
     firstMerchant = JSON.parse(response.body) 
 
@@ -23,10 +24,23 @@ describe 'Finding Customers By Merchant' do
 
     get "/api/v1/merchants/#{m2id}/customers"
     secondMerchant = JSON.parse(response.body)
-    
+
     expect(response).to be_successful;
     expect(secondMerchant["data"][0]["type"]).to eq("customer")
-    expect(secondMerchant["data"][1]["attributes"]["first_name"]).to eq("Roger")
+
+    expect(secondMerchant["data"][0]["attributes"]["first_name"]).to eq("Roger")
+
+    # SAD PATH
+    get "/api/v1/merchants/#{54321}/customers"
+    
+    expect(response).to_not be_successful
+    expect(response.code).to eq("404")
+    
+    data = JSON.parse(response.body, symbolize_names: true) 
+    
+    expect(data[:errors]).to be_a(Array)
+    expect(data[:errors].first[:status]).to eq(404)
+    expect(data[:errors].first[:title]).to eq("Couldn't find Merchant with 'id'=54321")
   end
 
   it 'has a sad path for when a merchant is not found' do

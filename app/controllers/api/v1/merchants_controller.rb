@@ -6,7 +6,7 @@ class Api::V1::MerchantsController < ApplicationController
   def index
     merchants = Merchant.all
 
-    merchants = Merchant.returned_items("returned") if params[:status] == "returned"
+    merchants = merchants.item_status(params[:status]) if params[:status]
     merchants = merchants.sort_by_age if params[:sorted] == "age"
     
     render json: MerchantIndexSerializer.new(merchants)
@@ -15,6 +15,10 @@ class Api::V1::MerchantsController < ApplicationController
   def show
     merchant = Merchant.find(params[:id])
     render json: MerchantShowSerializer.new(merchant)
+    else
+      error_message = "Merchant not found"
+      render json: ErrorSerializer.format_error(StandardError.new(error_message), "404"), status: :not_found
+    end
   end
 
   def create

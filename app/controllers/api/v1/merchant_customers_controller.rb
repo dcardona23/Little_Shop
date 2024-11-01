@@ -12,4 +12,10 @@ class Api::V1::MerchantCustomersController < ApplicationController
   def record_not_found(exception)
     render json: ErrorSerializer.format_error(exception, 404), status: :not_found
   end
+
+  private
+
+  def record_not_found(exception)
+    render json: ErrorSerializer.format_error(exception, 404), status: :not_found
+  end
 end
