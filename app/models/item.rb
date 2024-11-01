@@ -13,4 +13,8 @@ class Item < ApplicationRecord
       scope
     end
   end
+
+  def self.find_by_name(input)
+    where("name ILIKE ?", "%#{input}%")
+  end
 end
