@@ -10,4 +10,11 @@ class Merchant < ApplicationRecord
   def self.item_status(status)
     joins(:invoices).where(invoices: { status: status }).distinct
   end
+
+  def self.find_by_name(input)
+    merchants = where("name ILIKE ?", "%#{input}%")
+    if merchants.any?
+      merchant = merchants.order(:name).first
+    end
+  end
 end

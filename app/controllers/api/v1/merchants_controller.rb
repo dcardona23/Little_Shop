@@ -3,7 +3,19 @@ class Api::V1::MerchantsController < ApplicationController
   def index
     merchants = Merchant.all
 
-    merchants = Merchant.item_status("returned") if params[:status] == "returned"
+    if params[:name]
+      merchant = merchants.find_by_name(params[:name])
+    end
+
+    if merchant
+      render json: MerchantShowSerializer.new(merchant)
+    else
+      render json: { data: {} }
+    end
+
+    return
+    
+    merchants = merchants.item_status(params[:status]) if params[:status]
     merchants = merchants.sort_by_age if params[:sorted] == "age"
     
     render json: MerchantIndexSerializer.new(merchants)
@@ -23,9 +35,14 @@ class Api::V1::MerchantsController < ApplicationController
   end
 
   def show
-    merchant = Merchant.find(params[:id])
+    merchant = Merchant.find_by(id: params[:id]) if params[:id]
 
+    if merchant
     render json: MerchantShowSerializer.new(merchant)
+    else
+      error_message = "Merchant not found"
+      render json: ErrorSerializer.format_error(StandardError.new(error_message), "404"), status: :not_found
+    end
   end
 
   def destroy
