@@ -14,6 +14,10 @@ class Item < ApplicationRecord
     end
   end
 
+  def self.find_by_name(input)
+    where("name ILIKE ?", "%#{input}%")
+  end
+
   def self.max_filter(scope, params)
     filter = params[:max_price]
     if filter.present?
