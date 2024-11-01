@@ -255,4 +255,53 @@ describe "items" do
       end
     end
   end
+
+  describe "can handle  parameters" do
+    it "SAD cant find negative min price" do
+      get "/api/v1/items/find_all?min_price=-3.2"
+
+      expect(response).not_to be_successful
+      expect(response).to have_http_status(400)
+      json_response = JSON.parse(response.body, symbolize_names: true)
+    
+      expect(json_response[:errors]).to be_an(Array)
+      expect(json_response[:message]).to eq("Your query could not be completed")
+      expect(json_response[:errors][0][:title]).to include("Cannot have a negative number for min_price")
+    end
+
+    it "SAD cant find max price 0 or less" do
+      get "/api/v1/items/find_all?max_price=-3.2"
+
+      expect(response).not_to be_successful
+      expect(response).to have_http_status(400)
+      json_response = JSON.parse(response.body, symbolize_names: true)
+    
+      expect(json_response[:errors]).to be_an(Array)
+      expect(json_response[:message]).to eq("Your query could not be completed")
+      expect(json_response[:errors][0][:title]).to include("Max price cannot be 0 or lower than 0")
+
+    end
+
+    it "SAD cant look for a name and a price at same time" do
+      get "/api/v1/items/find_all?max_price=-3.2&name=apple"
+
+      expect(response).not_to be_successful
+      expect(response).to have_http_status(400)
+      json_response = JSON.parse(response.body, symbolize_names: true)
+    
+      expect(json_response[:errors]).to be_an(Array)
+      expect(json_response[:message]).to eq("Your query could not be completed")
+      expect(json_response[:errors][0][:title]).to include("Cannot search for a name and price at the same time")
+    end
+
+    it "HAPPY! can look for both a min and max price" do
+      get "/api/v1/items/find_all?max_price=2.00&min_price=0.60"
+
+      expect(response).to be_successful
+      expect(response).to have_http_status(200)
+      json_response = JSON.parse(response.body, symbolize_names: true)
+      
+      expect(json_response[:data].count).to eq(2)
+    end
+  end
 end
