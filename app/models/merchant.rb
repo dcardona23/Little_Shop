@@ -14,4 +14,11 @@ class Merchant < ApplicationRecord
   def self.find_by_name(input)
     where("name ILIKE ?", "%#{input}%").order(:name).first
   end
+
+  def self.filter_merchants(scope, params)
+    scope = scope.find_by_name(params[:name]) if params[:name]
+    scope = scope.item_status(params[:status]) if params[:status]
+    scope = scope.sort_by_age if params[:sorted] == "age"
+    scope 
+  end
 end
