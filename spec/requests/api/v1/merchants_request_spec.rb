@@ -38,6 +38,15 @@ describe "Merchants" do
     expect(merchant["data"]["attributes"]["name"]).to eq(@merchant1.name)
   end
 
+  it 'returns a single merchant based on name params' do
+    get "/api/v1/merchants?name=shop"
+    merchant = JSON.parse(response.body, symbolize_names: true)
+
+    expect(merchant[:data]).to have_key(:id)
+    expect(merchant[:data][:attributes][:name]).to eq("Large Shop of Wonders")
+  end
+
+
   it 'can create a new merchant' do
     merchant_params = {
       name: "Susan"
