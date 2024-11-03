@@ -6,7 +6,7 @@ class Api::V1::MerchantsController < ApplicationController
   def index
     merchants = Merchant.filter_merchants(Merchant.all, params)
     
-    if !merchants 
+    if merchants == {}
       render json: { data: {} }
     elsif params[:name]
       render json: MerchantShowSerializer.new(merchants)

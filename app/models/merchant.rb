@@ -11,14 +11,15 @@ class Merchant < ApplicationRecord
     joins(:invoices).where(invoices: { status: status }).distinct
   end
 
-  # def self.find_by_name(scope, input)
-  #   where("name ILIKE ?", "%#{input}%").order(:name).first
-  # end
-
   def self.filter_merchants(scope, params)
-    scope = scope.where("name ILIKE ?", "%#{params[:name]}%").order(:name).first if (params[:name])
+    if params[:name]
+      scope = scope.where("name ILIKE ?", "%#{params[:name]}%").order(:name).limit(1)
+      return scope.first || {}
+    end
+
     scope = scope.item_status(params[:status]) if params[:status]
     scope = scope.sort_by_age if params[:sorted] == "age"
-    scope 
+    
+    scope.empty? ? {} : scope.to_a
   end
 end

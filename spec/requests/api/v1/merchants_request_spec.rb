@@ -17,6 +17,18 @@ describe "Merchants" do
     expect(merchants[:data][2][:attributes][:name]).to eq("Wizard's Chest")
   end
 
+  it 'renders an empty object if there are no merchants found' do
+    delete "/api/v1/merchants/#{@merchant1.id}"
+    delete "/api/v1/merchants/#{@merchant2.id}"
+    delete "/api/v1/merchants/#{@merchant3.id}"
+
+    get '/api/v1/merchants'
+    merchants = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response).to be_successful
+    expect(merchants[:data]).to eq({})
+  end
+
   it 'can get a merchant' do
     get "/api/v1/merchants/#{@merchant1.id}"
     merchant = JSON.parse(response.body)
