@@ -303,5 +303,16 @@ describe "items" do
       
       expect(json_response[:data].count).to eq(2)
     end
+
+    it "HAPPY! can look for a name" do
+      get "/api/v1/items/find_all?name=a"
+
+      expect(response).to be_successful
+      expect(response).to have_http_status(200)
+      json_response = JSON.parse(response.body, symbolize_names: true)
+
+      expect(json_response[:data].count).to eq(3)
+
+    end
   end
 end
