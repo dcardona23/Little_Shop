@@ -3,9 +3,9 @@ require 'rails_helper'
 RSpec.describe Merchant do
 
   before(:each) do
-    merchant1 = Merchant.create(name: "Little Shop of Horrors")
-    merchant2 = Merchant.create(name: "Large Shop of Wonders")
-    merchant3 = Merchant.create(name: "Wizard's Chest")
+    @merchant1 = Merchant.create(name: "Little Shop of Horrors")
+    @merchant2 = Merchant.create(name: "Large Shop of Wonders")
+    @merchant3 = Merchant.create(name: "Wizard's Chest")
   end
 
   describe 'relationships' do
@@ -91,6 +91,31 @@ RSpec.describe Merchant do
       expect(result3.name).to eq("Apple")
       expect(result4.name).to eq("Apple")
       expect(result5.name).to eq("Apple")
+    end
+
+    it 'filters merchants based on name params' do
+      result = Merchant.filter_merchants(Merchant.all, { name: "shop" })
+
+      expect(result).to eq(@merchant2)
+    end
+  
+    it 'filters merchants based on status params' do
+      customer = Customer.create!(first_name: "Bob", last_name: "Tucker")
+      invoice1 = Invoice.create!(customer_id: customer.id, merchant_id: @merchant1.id, status: "returned")
+      invoice2 = Invoice.create!(customer_id: customer.id, merchant_id: @merchant2.id, status: "returned")
+      invoice3 = Invoice.create!(customer_id: customer.id, merchant_id: @merchant1.id, status: "returned")
+      invoice4 = Invoice.create!(customer_id: customer.id, merchant_id: @merchant3.id, status: "packaged")
+  
+      result = Merchant.filter_merchants(Merchant.all, { status: "returned" })
+      expect(result).to eq([@merchant1, @merchant2])
+      expect(result).not_to include(@merchant3)
+    end  
+
+    it 'renders an empty object if there are no merchants found' do
+      result = Merchant.filter_merchants(Merchant.all, { name: "pumpkin" })
+      # binding.pry
+
+      expect(result).to eq({})
     end
   end
 end

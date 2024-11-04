@@ -3,7 +3,7 @@ class Api::V1::MerchantInvoicesController < ApplicationController
 
   def index
     merchant = Merchant.find(params[:id])
-    invoices = params[:status] ? merchant.invoices.where(status: params[:status]) : merchant.invoices
+    invoices = params[:status] ? merchant.invoices.find_by_status(params[:status]) : merchant.invoices
 
     if invoices.present?
       render json: MerchantInvoiceSerializer.new(invoices)
