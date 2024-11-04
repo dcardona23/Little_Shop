@@ -25,7 +25,7 @@ class Item < ApplicationRecord
 
   def self.max_filter(scope, params)
     filter = params[:max_price]
-    if params[:max_price].present? && filter.present?
+    if params[:max_price].present?
       scope.where("unit_price <= ?", "#{filter}")
     else
       scope
@@ -34,7 +34,7 @@ class Item < ApplicationRecord
 
   def self.min_filter(scope, params)
     filter = params[:min_price]
-    if params[:min_price].present? && filter.present?
+    if params[:min_price].present?
       scope.where("unit_price >= ?", "#{filter}")
     else
       scope
