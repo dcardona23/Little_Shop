@@ -83,6 +83,24 @@ describe "Merchants" do
     expect(@merchant1.name).to eq("Scary Shoppe of Horrors")
   end
 
+  it 'can find a single merchant by name' do
+    get "/api/v1/merchants/find?name=Chest"
+    expect(response).to be_successful
+
+    data = JSON.parse(response.body, symbolize_names: true)
+    expect(data.count).to eq(1)
+    expect(data[:data][:attributes][:name]).to eq("Wizard's Chest")
+  end
+
+  it 'can return empty array when no merchant is found' do
+    get "/api/v1/merchants/find?name=pineapple"
+    expect(response).to be_successful
+
+    data = JSON.parse(response.body, symbolize_names: true)
+    expect(data.count).to eq(1)
+    expect(data).to eq({:data=>{}})
+  end
+
   describe 'sad paths' do
     it 'has a sad path for not finding a merchant' do
       get "/api/v1/merchants/99999999"
@@ -125,5 +143,30 @@ describe "Merchants" do
       expect(data[:errors]).to be_an(Array)
       expect(data[:errors][0]).to eq("Name can't be blank")
     end
+
+    it 'has a sad path for invalid search parameters' do
+      get "/api/v1/merchants/find?name="
+      expect(response).to have_http_status(:bad_request)
+
+      data = JSON.parse(response.body, symbolize_names: true)
+
+      expect(data[:message]).to eq("Your query could not be completed")
+      expect(data[:errors]).to be_an(Array)
+      expect(data[:errors][0][:status]).to eq("400")
+      expect(data[:errors][0][:title]).to include("Name cannot be empty")
+    end
+
+    it 'has a sad path for missinng search parameters' do
+      get "/api/v1/merchants/find"
+      expect(response).to have_http_status(:bad_request)
+
+      data = JSON.parse(response.body, symbolize_names: true)
+
+      expect(data[:message]).to eq("Your query could not be completed")
+      expect(data[:errors]).to be_an(Array)
+      expect(data[:errors][0][:status]).to eq("400")
+      expect(data[:errors][0][:title]).to include("Find cannot be empty")
+    end
+
   end
 end

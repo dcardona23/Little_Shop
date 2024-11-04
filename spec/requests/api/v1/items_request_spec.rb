@@ -283,7 +283,7 @@ describe "items" do
     end
 
     it "SAD cant look for a name and a price at same time" do
-      get "/api/v1/items/find_all?max_price=-3.2&name=apple"
+      get "/api/v1/items/find_all?max_price=5.20&name=apple"
 
       expect(response).not_to be_successful
       expect(response).to have_http_status(400)
@@ -292,6 +292,29 @@ describe "items" do
       expect(json_response[:errors]).to be_an(Array)
       expect(json_response[:message]).to eq("Your query could not be completed")
       expect(json_response[:errors][0][:title]).to include("Cannot search for a name and price at the same time")
+    end
+
+    it "SAD cant have an empty find_all field" do
+      get "/api/v1/items/find_all"
+
+      expect(response).not_to be_successful
+      expect(response).to have_http_status(400)
+      json_response = JSON.parse(response.body, symbolize_names: true)
+      expect(json_response[:errors]).to be_an(Array)
+      expect(json_response[:message]).to eq("Your query could not be completed")
+      expect(json_response[:errors][0][:title]).to include("Find All parameters cannot be empty")
+    end
+
+    it "SAD cant have an empty name field" do
+      get "/api/v1/items/find_all?name="
+
+      expect(response).not_to be_successful
+      expect(response).to have_http_status(400)
+      json_response = JSON.parse(response.body, symbolize_names: true)
+      expect(json_response[:errors]).to be_an(Array)
+      expect(json_response[:message]).to eq("Your query could not be completed")
+      expect(json_response[:errors][0][:title]).to include("Name input cannot be empty")
+
     end
 
     it "HAPPY! can look for both a min and max price" do
