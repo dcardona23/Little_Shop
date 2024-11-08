@@ -3,14 +3,14 @@ require 'rails_helper'
 describe "coupons" do
   before(:each) do
 
-    @merchant1 = Merchant.create(
+    @merchant1 = Merchant.create!(
       name: "Susan"
     )
-    @merchant2 = Merchant.create(
+    @merchant2 = Merchant.create!(
       name: "Steve"
     )
 
-    @coupon1 = Coupon.create(
+    @coupon1 = Coupon.create!(
       name: Faker::Commerce.product_name,
       code: Faker::Commerce.promotion_code,
       percent_off: 50,
@@ -18,7 +18,7 @@ describe "coupons" do
       merchant_id: @merchant1.id
     )
 
-    @coupon2 = Coupon.create(
+    @coupon2 = Coupon.create!(
       name: Faker::Commerce.product_name,
       code: Faker::Commerce.promotion_code,
       percent_off: 30,
@@ -26,7 +26,7 @@ describe "coupons" do
       merchant_id: @merchant1.id
     )
 
-    @coupon3 = Coupon.create(
+    @coupon3 = Coupon.create!(
       name: Faker::Commerce.product_name,
       code: Faker::Commerce.promotion_code,
       percent_off: 25,
@@ -34,7 +34,7 @@ describe "coupons" do
       merchant_id: @merchant2.id
     )
 
-    @coupon4 = Coupon.create(
+    @coupon4 = Coupon.create!(
       name: Faker::Commerce.product_name,
       code: Faker::Commerce.promotion_code,
       percent_off: nil,
@@ -42,7 +42,7 @@ describe "coupons" do
       merchant_id: @merchant1.id
     )
 
-    @coupon5 = Coupon.create(
+    @coupon5 = Coupon.create!(
       name: Faker::Commerce.product_name,
       code: Faker::Commerce.promotion_code,
       percent_off: nil,
@@ -52,13 +52,24 @@ describe "coupons" do
   end
 
   it 'can get all coupons for a specified merchant' do
-    get '/merchants?sorted=age'
-    merchants = JSON.parse(response.body, symbolize_names: true)
+    get "/api/v1/merchants/#{@merchant1.id}/coupons"
+    coupons = JSON.parse(response.body, symbolize_names: true)
 
     expect(response).to be_successful
-    expect(merchants[:data][0][:attributes][:name]).to eq("Little Shop of Horrors")
-    expect(merchants[:data][1][:attributes][:name]).to eq("Large Shop of Wonders")
-    expect(merchants[:data][2][:attributes][:name]).to eq("Wizard's Chest")
+    expect(coupons[:data].length).to eq(3)
+    expect(coupons[:data][0][:attributes][:name]).to eq(@coupon1.name)
+    expect(coupons[:data][1][:attributes][:name]).to eq(@coupon2.name)
+    expect(coupons[:data][2][:attributes][:name]).to eq(@coupon4.name)
+  end
+
+  it 'can get all coupons for a different merchant' do
+    get "/api/v1/merchants/#{@merchant2.id}/coupons"
+    coupons = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response).to be_successful
+    expect(coupons[:data].length).to eq(2)
+    expect(coupons[:data][0][:attributes][:name]).to eq(@coupon3.name)
+    expect(coupons[:data][1][:attributes][:name]).to eq(@coupon5.name)
   end
 
 end
