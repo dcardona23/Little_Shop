@@ -4,7 +4,13 @@ class Api::V1::CouponsController < ApplicationController
   rescue_from ArgumentError, with: :invalid_parameters
 
   def index
-    coupons = Coupon.all
-    render json: CouponSerializer.new
+    # binding.pry
+    coupons = Coupon.filter_coupons(Coupon.all, params)
+    render json: CouponSerializer.new(coupons)
   end
+
+  def show
+    
+  end
+
 end
