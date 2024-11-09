@@ -1,6 +1,6 @@
 class Coupon < ApplicationRecord
   belongs_to :merchant
-  has_one :invoice
+  has_many :invoices
 
   validates :name, :presence => true
   
@@ -26,8 +26,16 @@ class Coupon < ApplicationRecord
   end
 
   def deactivate
-    if active 
-      update(active: false)
+    if active
+      invoices_with_coupon = Invoice.where(coupon_id: self.id).exists?
+
+      if !invoices_with_coupon
+        update(active: false)
+      else
+        errors.add(:base, "Coupon cannot be deactivated with pending invoices")
+        false
+      end
+      
     else
       errors.add(:base, "Coupon is already inactive")
       false
