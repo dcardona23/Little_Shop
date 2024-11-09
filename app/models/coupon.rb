@@ -3,9 +3,13 @@ class Coupon < ApplicationRecord
   has_one :invoice
 
   validates :name, :presence => true
+  
+  after_initialize :set_default_active, if: :new_record?
 
   def self.filter_coupons(scope, params)
     scope = scope.where(merchant_id: params[:merchant_id]) if params[:merchant_id]
+
+    scope.to_a
   end
 
   def set_default_active
@@ -22,7 +26,12 @@ class Coupon < ApplicationRecord
   end
 
   def deactivate
-    update(active: false)
+    if active 
+      update(active: false)
+    else
+      errors.add(:base, "Coupon is already inactive")
+      false
+    end
   end
 
   def can_activate?
