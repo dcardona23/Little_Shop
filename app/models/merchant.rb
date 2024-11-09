@@ -9,7 +9,7 @@ class Merchant < ApplicationRecord
   end
 
   def self.item_status(status)
-    joins(:invoices).where(invoices: { status: status }).distinct
+    joins(:invoices).where(invoices: { status: status } ).distinct
   end
 
   def self.filter_merchants(scope, params)
