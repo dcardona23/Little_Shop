@@ -29,13 +29,16 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      resources :merchants, only: [:show, :index] do
+        resources :coupons, only: [:index]
+      end
 
-      get "/merchants/:merchant_id/coupons", to: "coupons#index"
-      get "/coupons/:id", to: "coupons#show"
-      post "/coupons", to: "coupons#create"
-
-
+      resources :coupons, only: [:index, :show, :create] do
+        member do
+          patch :activate
+          patch :deactivate
+        end
+      end
     end
   end
-
 end
