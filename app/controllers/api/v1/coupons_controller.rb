@@ -22,9 +22,10 @@ class Api::V1::CouponsController < ApplicationController
     coupon = Coupon.find(params[:id])
 
     if coupon.activate(params[:merchant_id])
-      render json: { message: "Coupon activated successfully" }, status: :ok
+      render json: CouponSerializer.new(coupon), status: :ok
     else
-      render json: { error: "Cannot activate this coupon" }, status: :unprocessable_entity
+      error = ActiveRecord::RecordInvalid.new(coupon)
+      record_invalid(error)
     end
   end
 
@@ -32,9 +33,10 @@ class Api::V1::CouponsController < ApplicationController
     coupon = Coupon.find(params[:id])
 
     if coupon.deactivate
-      render json: { message: "Coupon deactivated successfully" }, status: :ok
+      render json: CouponSerializer.new(coupon), status: :ok
     else
-      render json: { error: "Cannot deactivate this coupon" }, status: :unprocessable_entity
+      error = ActiveRecord::RecordInvalid.new(coupon)
+      record_invalid(error)
     end
   end
 
@@ -42,6 +44,22 @@ class Api::V1::CouponsController < ApplicationController
 
   def coupon_params
     params.require(:coupon).permit(:name, :code, :percent_off, :dollar_off, :merchant_id, :active)
+  end
+
+  def record_not_found(exception)
+    render json: ErrorSerializer.format_error(exception, 404), status: :not_found
+  end
+
+  def record_invalid(exception)
+    render json: ErrorSerializer.format_error(exception, 400), status: :bad_request
+  end
+
+  def record_parameter_missing(exception)
+    render json: ErrorSerializer.format_error(exception, 400), status: :bad_request
+  end  
+
+  def invalid_parameters(exception)
+    render json: ErrorSerializer.format_error(exception, 400), status: :bad_request
   end
 
 end
