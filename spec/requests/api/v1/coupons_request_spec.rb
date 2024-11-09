@@ -16,7 +16,7 @@ describe "coupons" do
       percent_off: 50,
       dollar_off: nil,
       merchant_id: @merchant1.id, 
-      active: true
+      active: false
     )
 
     @coupon2 = Coupon.create!(
@@ -103,4 +103,76 @@ describe "coupons" do
     expect(new_coupon.name).to eq(coupon_params[:name])
   end
 
+  it 'can activate a coupon' do
+    expect(@coupon1.active).to eq(false)
+
+    patch activate_api_v1_coupon_path(@coupon1), headers: headers
+
+    expect(response).to be_successful
+    @coupon1.reload
+    expect(@coupon1.active).to eq(true)
+  end
+
+  it 'can activate up to five coupons for a merchant' do
+    coupon6 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+    )
+
+    coupon7 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+    )
+    
+    patch activate_api_v1_coupon_path(@coupon1), headers: headers
+
+    expect(response).to be_successful
+    @coupon1.reload
+    expect(@coupon1.active).to eq(true)
+  end
+
+  it 'cannot activate a coupon if a merchant has five active coupons' do
+    expect(@coupon1.active).to eq(false)
+
+    coupon6 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+    )
+
+    coupon7 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+    )
+
+    coupon8 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+    )
+
+    patch activate_api_v1_coupon_path(@coupon1), headers: headers
+
+    expect(response).not_to be_successful
+    @coupon1.reload
+    expect(@coupon1.active).to eq(false)
+  end
 end

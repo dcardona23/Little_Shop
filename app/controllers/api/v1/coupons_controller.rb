@@ -18,14 +18,20 @@ class Api::V1::CouponsController < ApplicationController
     render json: CouponSerializer.new(coupon), status: :created
   end
 
+  def activate
+    coupon = Coupon.find(params[:id])
+
+    if coupon.activate(params[:merchant_id])
+      render json: { message: "Coupon activated successfully" }, status: :ok
+    else
+      render json: { error: "Cannot activate this coupon." }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def coupon_params
     params.require(:coupon).permit(:name, :code, :percent_off, :dollar_off, :merchant_id)
-  end
-
-  def set_default_active
-    self.active = true if active.nil?
   end
 
 end
