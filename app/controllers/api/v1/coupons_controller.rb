@@ -13,4 +13,19 @@ class Api::V1::CouponsController < ApplicationController
     render json: CouponSerializer.new(coupon)
   end
 
+  def create
+    coupon = Coupon.create!(coupon_params)
+    render json: CouponSerializer.new(coupon), status: :created
+  end
+
+  private
+
+  def coupon_params
+    params.require(:coupon).permit(:name, :code, :percent_off, :dollar_off, :merchant_id)
+  end
+
+  def set_default_active
+    self.active = true if active.nil?
+  end
+
 end

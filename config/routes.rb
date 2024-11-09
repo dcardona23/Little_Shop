@@ -31,7 +31,9 @@ Rails.application.routes.draw do
     namespace :v1 do
 
       get "/merchants/:merchant_id/coupons", to: "coupons#index"
-      get "/coupons/:id/", to: "coupons#show"
+      get "/coupons/:id", to: "coupons#show"
+      post "/coupons", to: "coupons#create"
+
 
     end
   end

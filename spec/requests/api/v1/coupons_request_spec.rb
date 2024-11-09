@@ -15,7 +15,8 @@ describe "coupons" do
       code: Faker::Commerce.promotion_code,
       percent_off: 50,
       dollar_off: nil,
-      merchant_id: @merchant1.id
+      merchant_id: @merchant1.id, 
+      active: true
     )
 
     @coupon2 = Coupon.create!(
@@ -23,7 +24,8 @@ describe "coupons" do
       code: Faker::Commerce.promotion_code,
       percent_off: 30,
       dollar_off: nil,
-      merchant_id: @merchant1.id
+      merchant_id: @merchant1.id, 
+      active: true
     )
 
     @coupon3 = Coupon.create!(
@@ -31,7 +33,8 @@ describe "coupons" do
       code: Faker::Commerce.promotion_code,
       percent_off: 25,
       dollar_off: nil,
-      merchant_id: @merchant2.id
+      merchant_id: @merchant2.id, 
+      active: true
     )
 
     @coupon4 = Coupon.create!(
@@ -39,7 +42,8 @@ describe "coupons" do
       code: Faker::Commerce.promotion_code,
       percent_off: nil,
       dollar_off: 5,
-      merchant_id: @merchant1.id
+      merchant_id: @merchant1.id, 
+      active: true
     )
 
     @coupon5 = Coupon.create!(
@@ -47,7 +51,8 @@ describe "coupons" do
       code: Faker::Commerce.promotion_code,
       percent_off: nil,
       dollar_off: 2,
-      merchant_id: @merchant2.id
+      merchant_id: @merchant2.id, 
+      active: true
     )
   end
 
@@ -79,4 +84,23 @@ describe "coupons" do
     expect(response).to be_successful
     expect(coupons[:data][:attributes][:name]).to eq(@coupon1.name)
   end
+
+  it 'can create a new coupon' do
+    coupon_params = {
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: 50,
+      dollar_off: nil,
+      merchant_id: @merchant1.id
+      }
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+    post "/api/v1/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
+
+    new_coupon = Coupon.last
+
+    expect(response).to be_successful
+    expect(new_coupon.name).to eq(coupon_params[:name])
+  end
+
 end
