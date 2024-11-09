@@ -7,4 +7,13 @@ class MerchantIndexSerializer
 	attribute :item_count do |merchant|
 		merchant.items.count
 	end
+
+  attribute :coupons_count do |merchant|
+    merchant.coupons.count
+  end
+
+  attribute :invoice_coupon_count do |merchant|
+    merchant.invoices.joins(:coupon).count
+  end
+
 end
