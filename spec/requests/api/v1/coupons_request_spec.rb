@@ -175,4 +175,13 @@ describe "coupons" do
     @coupon1.reload
     expect(@coupon1.active).to eq(false)
   end
+
+  it 'can deactivate a coupon' do
+    patch deactivate_api_v1_coupon_path(@coupon2), headers: headers
+
+    expect(response).to be_successful
+    @coupon2.reload
+    expect(@coupon2.active).to eq(false)
+  end
+
 end

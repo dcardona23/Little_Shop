@@ -24,14 +24,24 @@ class Api::V1::CouponsController < ApplicationController
     if coupon.activate(params[:merchant_id])
       render json: { message: "Coupon activated successfully" }, status: :ok
     else
-      render json: { error: "Cannot activate this coupon." }, status: :unprocessable_entity
+      render json: { error: "Cannot activate this coupon" }, status: :unprocessable_entity
+    end
+  end
+
+  def deactivate
+    coupon = Coupon.find(params[:id])
+
+    if coupon.deactivate
+      render json: { message: "Coupon deactivated successfully" }, status: :ok
+    else
+      render json: { error: "Cannot deactivate this coupon" }, status: :unprocessable_entity
     end
   end
 
   private
 
   def coupon_params
-    params.require(:coupon).permit(:name, :code, :percent_off, :dollar_off, :merchant_id)
+    params.require(:coupon).permit(:name, :code, :percent_off, :dollar_off, :merchant_id, :active)
   end
 
 end
