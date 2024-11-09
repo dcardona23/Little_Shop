@@ -72,4 +72,11 @@ describe "coupons" do
     expect(coupons[:data][1][:attributes][:name]).to eq(@coupon5.name)
   end
 
+  it 'can get a single coupon by id' do
+    get "/api/v1/coupons/#{@coupon1.id}"
+    coupons = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response).to be_successful
+    expect(coupons[:data][:attributes][:name]).to eq(@coupon1.name)
+  end
 end
