@@ -14,8 +14,14 @@ class Api::V1::CouponsController < ApplicationController
   end
 
   def create
-    coupon = Coupon.create!(coupon_params)
-    render json: CouponSerializer.new(coupon), status: :created
+    coupon = Coupon.new(coupon_params)
+
+    if coupon.save
+        render json: CouponSerializer.new(coupon), status: :created
+    else
+      error = ActiveRecord::RecordInvalid.new(coupon)
+      record_invalid(error)
+    end
   end
 
   def activate

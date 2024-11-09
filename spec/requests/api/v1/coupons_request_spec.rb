@@ -56,132 +56,202 @@ describe "coupons" do
     )
   end
 
-  it 'can get all coupons for a specified merchant' do
-    get "/api/v1/merchants/#{@merchant1.id}/coupons"
-    coupons = JSON.parse(response.body, symbolize_names: true)
+  describe 'getting coupons' do
+    it 'can get all coupons for a specified merchant' do
+      get "/api/v1/merchants/#{@merchant1.id}/coupons"
+      coupons = JSON.parse(response.body, symbolize_names: true)
 
-    expect(response).to be_successful
-    expect(coupons[:data].length).to eq(3)
-    expect(coupons[:data][0][:attributes][:name]).to eq(@coupon1.name)
-    expect(coupons[:data][1][:attributes][:name]).to eq(@coupon2.name)
-    expect(coupons[:data][2][:attributes][:name]).to eq(@coupon4.name)
+      expect(response).to be_successful
+      expect(coupons[:data].length).to eq(3)
+      expect(coupons[:data][0][:attributes][:name]).to eq(@coupon1.name)
+      expect(coupons[:data][1][:attributes][:name]).to eq(@coupon2.name)
+      expect(coupons[:data][2][:attributes][:name]).to eq(@coupon4.name)
+    end
+
+    it 'can get all coupons for a different merchant' do
+      get "/api/v1/merchants/#{@merchant2.id}/coupons"
+      coupons = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_successful
+      expect(coupons[:data].length).to eq(2)
+      expect(coupons[:data][0][:attributes][:name]).to eq(@coupon3.name)
+      expect(coupons[:data][1][:attributes][:name]).to eq(@coupon5.name)
+    end
+
+    it 'can get a single coupon by id' do
+      get "/api/v1/coupons/#{@coupon1.id}"
+      coupons = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_successful
+      expect(coupons[:data][:attributes][:name]).to eq(@coupon1.name)
+    end
+
+    it 'can get all of a merchant/s active coupons' do
+      get "/api/v1/merchants/#{@merchant1.id}/coupons?active=true"
+      coupons = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_successful
+      expect(coupons[:data].length).to eq(2)
+      expect(coupons[:data][0][:attributes][:name]).to eq(@coupon2.name)
+      expect(coupons[:data][1][:attributes][:name]).to eq(@coupon4.name)
+    end
+
+    it 'can get all of a merchant/s inactive coupons' do
+      get "/api/v1/merchants/#{@merchant1.id}/coupons?active=false"
+      coupons = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).to be_successful
+      expect(coupons[:data].length).to eq(1)
+      expect(coupons[:data][0][:attributes][:name]).to eq(@coupon1.name)
+    end
+
   end
 
-  it 'can get all coupons for a different merchant' do
-    get "/api/v1/merchants/#{@merchant2.id}/coupons"
-    coupons = JSON.parse(response.body, symbolize_names: true)
+  describe 'creating coupons' do
+    it 'can create a new coupon' do
+      coupon_params = {
+        name: Faker::Commerce.product_name,
+        code: Faker::Commerce.promotion_code,
+        percent_off: 50,
+        dollar_off: nil,
+        merchant_id: @merchant1.id
+        }
 
-    expect(response).to be_successful
-    expect(coupons[:data].length).to eq(2)
-    expect(coupons[:data][0][:attributes][:name]).to eq(@coupon3.name)
-    expect(coupons[:data][1][:attributes][:name]).to eq(@coupon5.name)
+      headers = {"CONTENT_TYPE" => "application/json"}
+      post "/api/v1/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
+
+      new_coupon = Coupon.last
+
+      expect(response).to be_successful
+      expect(new_coupon.name).to eq(coupon_params[:name])
+    end
+
+    it 'cannot create a coupon with a duplicate coupon code' do
+      coupon = Coupon.create!(
+        name: Faker::Commerce.product_name,
+        code: "FreeToday",
+        percent_off: nil,
+        dollar_off: 2,
+        merchant_id: @merchant2.id, 
+        active: true
+      )
+
+      coupon_params = {
+        name: Faker::Commerce.product_name,
+        code: "FreeToday",
+        percent_off: 50,
+        dollar_off: nil,
+        merchant_id: @merchant1.id
+        }
+
+      headers = {"CONTENT_TYPE" => "application/json"}
+      post "/api/v1/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
+      data = JSON.parse(response.body, symbolize_names: true)
+
+
+      expect(response).not_to be_successful
+      expect(response).to have_http_status(400)      
+      expect(data[:message]).to eq("Your query could not be completed")
+      expect(data[:errors]).to be_an(Array)
+      expect(data[:errors][0]).to eq("Code has already been taken")
+    end
   end
 
-  it 'can get a single coupon by id' do
-    get "/api/v1/coupons/#{@coupon1.id}"
-    coupons = JSON.parse(response.body, symbolize_names: true)
+  describe 'activating coupons' do 
+    it 'can activate a coupon' do
+      expect(@coupon1.active).to eq(false)
 
-    expect(response).to be_successful
-    expect(coupons[:data][:attributes][:name]).to eq(@coupon1.name)
+      patch activate_api_v1_coupon_path(@coupon1), headers: headers
+
+      expect(response).to be_successful
+      @coupon1.reload
+      expect(@coupon1.active).to eq(true)
+    end
+
+    it 'can activate up to five coupons for a merchant' do
+      coupon6 = Coupon.create!(
+        name: Faker::Commerce.product_name,
+        code: Faker::Commerce.promotion_code,
+        percent_off: nil,
+        dollar_off: 2,
+        merchant_id: @merchant1.id, 
+        active: true
+      )
+
+      coupon7 = Coupon.create!(
+        name: Faker::Commerce.product_name,
+        code: Faker::Commerce.promotion_code,
+        percent_off: nil,
+        dollar_off: 2,
+        merchant_id: @merchant1.id, 
+        active: true
+      )
+      
+      patch activate_api_v1_coupon_path(@coupon1), headers: headers
+
+      expect(response).to be_successful
+      @coupon1.reload
+      expect(@coupon1.active).to eq(true)
+    end
+
+    it 'cannot activate a coupon if a merchant has five active coupons' do
+      expect(@coupon1.active).to eq(false)
+
+      coupon6 = Coupon.create!(
+        name: Faker::Commerce.product_name,
+        code: Faker::Commerce.promotion_code,
+        percent_off: nil,
+        dollar_off: 2,
+        merchant_id: @merchant1.id, 
+        active: true
+      )
+
+      coupon7 = Coupon.create!(
+        name: Faker::Commerce.product_name,
+        code: Faker::Commerce.promotion_code,
+        percent_off: nil,
+        dollar_off: 2,
+        merchant_id: @merchant1.id, 
+        active: true
+      )
+
+      coupon8 = Coupon.create!(
+        name: Faker::Commerce.product_name,
+        code: Faker::Commerce.promotion_code,
+        percent_off: nil,
+        dollar_off: 2,
+        merchant_id: @merchant1.id, 
+        active: true
+      )
+
+      patch activate_api_v1_coupon_path(@coupon1), headers: headers
+
+      expect(response).not_to be_successful
+      @coupon1.reload
+      expect(@coupon1.active).to eq(false)
+    end
   end
 
-  it 'can create a new coupon' do
-    coupon_params = {
-      name: Faker::Commerce.product_name,
-      code: Faker::Commerce.promotion_code,
-      percent_off: 50,
-      dollar_off: nil,
-      merchant_id: @merchant1.id
-      }
+  describe 'deactivating coupons' do 
+    it 'can deactivate a coupon' do
+      patch deactivate_api_v1_coupon_path(@coupon2), headers: headers
 
-    headers = {"CONTENT_TYPE" => "application/json"}
-    post "/api/v1/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
+      expect(response).to be_successful
+      @coupon2.reload
+      expect(@coupon2.active).to eq(false)
+    end
 
-    new_coupon = Coupon.last
+    it 'will not deactivate a coupon if it is already inactive' do
+      expect(@coupon1.active).to eq(false)
+      patch deactivate_api_v1_coupon_path(@coupon1), headers: headers
 
-    expect(response).to be_successful
-    expect(new_coupon.name).to eq(coupon_params[:name])
+      expect(response).to have_http_status(400)
+        
+      data = JSON.parse(response.body, symbolize_names: true)
+      
+      expect(data[:message]).to eq("Your query could not be completed")
+      expect(data[:errors]).to be_an(Array)
+      expect(data[:errors][0]).to eq("Coupon is already inactive")
+    end
   end
-
-  it 'can activate a coupon' do
-    expect(@coupon1.active).to eq(false)
-
-    patch activate_api_v1_coupon_path(@coupon1), headers: headers
-
-    expect(response).to be_successful
-    @coupon1.reload
-    expect(@coupon1.active).to eq(true)
-  end
-
-  it 'can activate up to five coupons for a merchant' do
-    coupon6 = Coupon.create!(
-      name: Faker::Commerce.product_name,
-      code: Faker::Commerce.promotion_code,
-      percent_off: nil,
-      dollar_off: 2,
-      merchant_id: @merchant1.id, 
-      active: true
-    )
-
-    coupon7 = Coupon.create!(
-      name: Faker::Commerce.product_name,
-      code: Faker::Commerce.promotion_code,
-      percent_off: nil,
-      dollar_off: 2,
-      merchant_id: @merchant1.id, 
-      active: true
-    )
-    
-    patch activate_api_v1_coupon_path(@coupon1), headers: headers
-
-    expect(response).to be_successful
-    @coupon1.reload
-    expect(@coupon1.active).to eq(true)
-  end
-
-  it 'cannot activate a coupon if a merchant has five active coupons' do
-    expect(@coupon1.active).to eq(false)
-
-    coupon6 = Coupon.create!(
-      name: Faker::Commerce.product_name,
-      code: Faker::Commerce.promotion_code,
-      percent_off: nil,
-      dollar_off: 2,
-      merchant_id: @merchant1.id, 
-      active: true
-    )
-
-    coupon7 = Coupon.create!(
-      name: Faker::Commerce.product_name,
-      code: Faker::Commerce.promotion_code,
-      percent_off: nil,
-      dollar_off: 2,
-      merchant_id: @merchant1.id, 
-      active: true
-    )
-
-    coupon8 = Coupon.create!(
-      name: Faker::Commerce.product_name,
-      code: Faker::Commerce.promotion_code,
-      percent_off: nil,
-      dollar_off: 2,
-      merchant_id: @merchant1.id, 
-      active: true
-    )
-
-    patch activate_api_v1_coupon_path(@coupon1), headers: headers
-
-    expect(response).not_to be_successful
-    @coupon1.reload
-    expect(@coupon1.active).to eq(false)
-  end
-
-  it 'can deactivate a coupon' do
-    patch deactivate_api_v1_coupon_path(@coupon2), headers: headers
-
-    expect(response).to be_successful
-    @coupon2.reload
-    expect(@coupon2.active).to eq(false)
-  end
-
 end

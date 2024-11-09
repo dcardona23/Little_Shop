@@ -3,21 +3,27 @@ class Coupon < ApplicationRecord
   has_many :invoices
 
   validates :name, :presence => true
+  validates :code, :presence => true, uniqueness: true
   
-  after_initialize :set_default_active, if: :new_record?
+  after_initialize :set_default_inactive, if: :new_record?
 
   def self.filter_coupons(scope, params)
     scope = scope.where(merchant_id: params[:merchant_id]) if params[:merchant_id]
+    scope = scope.where(active: true) if params[:active].present? && params[:active].to_s.downcase == 'true'
+    scope = scope.where(active: false) if params[:active].present? && params[:active].to_s.downcase == 'false'
 
     scope.to_a
   end
 
-  def set_default_active
-    self.active = true if active.nil?
+  def set_default_inactive
+    self.active ||= false
   end
 
   def activate(coupon)
-    if can_activate? 
+    if active
+      errors.add(:base, "Coupon is already active") 
+      false
+    elsif can_activate? && !active
       update(active: true)
     else
       errors.add(:base, "Merchant cannot have more than 5 active coupons")
