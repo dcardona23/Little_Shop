@@ -54,6 +54,14 @@ describe "coupons" do
       merchant_id: @merchant2.id, 
       active: true
     )
+
+    bob = Customer.create!(
+      first_name: "Bob", last_name: "Tucker"
+    )
+
+    invoice1 = Invoice.create!(
+      customer_id: bob.id, merchant_id: @merchant1.id, status: "shipped", coupon_id: @coupon4.id
+    )
   end
 
   describe 'getting coupons' do
@@ -230,15 +238,29 @@ describe "coupons" do
       @coupon1.reload
       expect(@coupon1.active).to eq(false)
     end
+
+    it 'will not activate a coupon if it is already active' do
+      expect(@coupon2.active).to eq(true)
+      patch activate_api_v1_coupon_path(@coupon2), headers: headers
+
+      expect(response).to have_http_status(400)
+        
+      data = JSON.parse(response.body, symbolize_names: true)
+
+      expect(data[:message]).to eq("Your query could not be completed")
+      expect(data[:errors]).to be_an(Array)
+      expect(data[:errors][0]).to eq("Coupon is already active")
+    end
+
   end
 
   describe 'deactivating coupons' do 
     it 'can deactivate a coupon' do
-      patch deactivate_api_v1_coupon_path(@coupon2), headers: headers
+      patch deactivate_api_v1_coupon_path(@coupon3), headers: headers
 
       expect(response).to be_successful
-      @coupon2.reload
-      expect(@coupon2.active).to eq(false)
+      @coupon3.reload
+      expect(@coupon3.active).to eq(false)
     end
 
     it 'will not deactivate a coupon if it is already inactive' do
@@ -252,6 +274,18 @@ describe "coupons" do
       expect(data[:message]).to eq("Your query could not be completed")
       expect(data[:errors]).to be_an(Array)
       expect(data[:errors][0]).to eq("Coupon is already inactive")
+    end
+
+    it 'will not deactivate a coupon with pending invoices' do
+      patch deactivate_api_v1_coupon_path(@coupon4), headers: headers
+
+      expect(response).to have_http_status(400)
+        
+      data = JSON.parse(response.body, symbolize_names: true)
+      
+      expect(data[:message]).to eq("Your query could not be completed")
+      expect(data[:errors]).to be_an(Array)
+      expect(data[:errors][0]).to eq("Coupon cannot be deactivated with pending invoices")
     end
   end
 end

@@ -19,7 +19,7 @@ class Coupon < ApplicationRecord
     self.active ||= false
   end
 
-  def activate(coupon)
+  def activate(merchant_id)
     if active
       errors.add(:base, "Coupon is already active") 
       false

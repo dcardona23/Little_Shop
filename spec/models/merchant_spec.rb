@@ -113,7 +113,6 @@ RSpec.describe Merchant do
 
     it 'renders an empty object if there are no merchants found' do
       result = Merchant.filter_merchants(Merchant.all, { name: "pumpkin" })
-      # binding.pry
 
       expect(result).to eq({})
     end

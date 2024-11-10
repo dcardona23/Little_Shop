@@ -1,9 +1,145 @@
 require 'rails_helper'
 
 RSpec.describe Coupon, type: :model do
+
+  after(:all) do
+    Coupon.delete_all
+    Merchant.delete_all
+  end
+
+  before(:each) do 
+    @merchant = Merchant.create!(name: "Test Merchant")
+    @merchant1 = Merchant.create!(name: "Test Merchant2")
+
+    @coupon = Coupon.create!(
+        name: "New Coupon", 
+        code: "Test Code", 
+        percent_off: 10,
+        merchant_id: @merchant.id
+      )
+
+      @coupon1 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: 50,
+      dollar_off: nil,
+      merchant_id: @merchant.id, 
+      active: false
+    )
+
+    @coupon2 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: 30,
+      dollar_off: nil,
+      merchant_id: @merchant.id, 
+      active: true
+    )
+
+    @coupon3 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: 25,
+      dollar_off: nil,
+      merchant_id: @merchant1.id, 
+      active: true
+    )
+
+    @coupon4 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 5,
+      merchant_id: @merchant1.id, 
+      active: true
+    )
+
+    @coupon5 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+    )
+
+    @coupon6 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: false
+    )
+  end
+
   describe 'relationships' do
     it { should belong_to :merchant }
     it { should have_many :invoices }
   end
 
+  describe 'validations' do
+    it {should validate_presence_of(:code)}
+
+    it 'validates uniqueness of coupon code' do
+      duplicate_coupon = Coupon.new(
+        name: "Duplicate Coupon", 
+        code: "Test Code", 
+        percent_off: 15,
+        merchant_id: @merchant.id
+      )
+
+      expect(duplicate_coupon).to be_invalid
+    end
+  end
+
+  describe 'filtering coupons' do
+    it 'filters coupons based on merchant_id' do
+      result = Coupon.filter_coupons(Coupon.all, { merchant_id: @merchant.id })
+      expect(result).to eq([@coupon, @coupon1, @coupon2])
+      expect(result).not_to include(@coupon3, @coupon4, @coupon5)
+    end
+
+    it 'filters coupons based on active status' do
+      result = Coupon.filter_coupons(Coupon.all, { merchant_id: @merchant.id, active: true })
+      expect(result).to eq([@coupon2])
+      expect(result).not_to include(@coupon1, @coupon3, @coupon4, @coupon5)
+    end
+  end
+
+  describe 'activating coupons' do
+    it 'will activate a coupon' do
+      
+      expect(@coupon1.activate(@merchant.id)).to be true
+    end
+
+    it 'will not activate a coupon that is already active' do
+
+      expect(@coupon2.activate(@merchant.id)).to be false
+      expect(@coupon2.errors.full_messages).to include("Coupon is already active")
+    end
+
+    it 'will not activate a coupon for a merchant that has 5 active coupons' do
+      @coupon7 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+    )
+
+    @coupon8 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+    )
+
+    expect(@coupon6.activate(@merchant1.id)).to be false
+    expect(@coupon6.errors.full_messages).to include("Merchant cannot have more than 5 active coupons")
+    end
+  end
 end
