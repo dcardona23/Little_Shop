@@ -12,10 +12,11 @@ RSpec.describe Invoice do
   describe 'validations' do
     it {should validate_presence_of(:status)}
   end
-
+    
   describe 'class and instance methods' do
     before(:each) do
       @merchant1 = Merchant.create(name: "Little Shop of Horrors")
+      @merchant2 = Merchant.create(name: "Gigantic Shop")
 
       @bob = Customer.create!(first_name: "Bob", last_name: "Tucker")
 
@@ -44,7 +45,7 @@ RSpec.describe Invoice do
       @invoice2 = Invoice.create!(customer_id: @bob.id, merchant_id: @merchant1.id, status: "shipped")
       @invoice3 = Invoice.create!(customer_id: @bob.id, merchant_id: @merchant1.id, status: "shipped")
       @invoice4 = Invoice.create!(customer_id: @bob.id, merchant_id: @merchant1.id, status: "packaged")
-      @invoice5 = Invoice.create!(customer_id: @bob.id, merchant_id: @merchant1.id, status: "packaged")
+      @invoice5 = Invoice.create!(customer_id: @bob.id, merchant_id: @merchant2.id, status: "packaged")
 
       @invoice_item1 = InvoiceItem.create!(
         quantity: 100,
@@ -141,6 +142,13 @@ RSpec.describe Invoice do
       expect(@invoice2.invoice_subtotal).to eq(71.75)
       expect(@invoice2.discount_total).to eq(71.75)
       expect(@invoice2.total_invoice_cost).to eq(0)
+    end
+
+    it 'requires that a merchant sell an item on the invoice before applying a coupon' do
+      @invoice5.coupon = @coupon1 
+      
+      expect(@invoice5).not_to be_valid
+      expect(@invoice5.errors[:coupon]).to include("Merchant does not sell an item on this invoice to which the coupon can be applied")
     end
   end
 end

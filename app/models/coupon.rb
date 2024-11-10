@@ -4,6 +4,8 @@ class Coupon < ApplicationRecord
 
   validates :name, :presence => true
   validates :code, :presence => true, uniqueness: true
+  validate :dollar_off_or_percent_off_present
+  validate :only_one_discount_present
   
   after_initialize :set_default_inactive, if: :new_record?
 
@@ -52,4 +54,15 @@ class Coupon < ApplicationRecord
     !active && Coupon.where(merchant_id: merchant_id, active: true).count < 5
   end
 
+  def dollar_off_or_percent_off_present
+    if dollar_off.nil? && percent_off.nil?
+      errors.add(:base, "Either dollar_off or percent_off must be present")
+    end
+  end
+
+  def only_one_discount_present
+    if dollar_off.present? && percent_off.present?
+      errors.add(:base, "Cannot have both dollar_off and percent_off")
+    end
+  end
 end

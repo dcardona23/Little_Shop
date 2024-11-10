@@ -22,10 +22,8 @@ class Invoice < ApplicationRecord
 
     if coupon.percent_off
       invoice_subtotal * (coupon.percent_off.to_f / 100)
-    elsif coupon.dollar_off
+    else coupon.dollar_off
       [coupon.dollar_off, invoice_subtotal].min
-    else
-      0
     end
   end
 
