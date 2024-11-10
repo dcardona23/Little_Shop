@@ -130,6 +130,34 @@ RSpec.describe Coupon, type: :model do
 
       expect(duplicate_coupon).to be_invalid
     end
+
+    it 'validates that either dollar_off or percent_off is present' do
+      coupon7 = Coupon.new(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: nil,
+      merchant_id: @merchant1.id, 
+      active: true
+    )
+
+    expect(coupon7).not_to be_valid
+    expect(coupon7.errors[:base]).to include("Either dollar_off or percent_off must be present")
+    end
+
+    it 'validates that both dollar_off and percent_off cannot be present' do
+      coupon8 = Coupon.new(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: 10,
+      dollar_off: 10,
+      merchant_id: @merchant1.id, 
+      active: true
+    )
+
+    expect(coupon8).not_to be_valid
+    expect(coupon8.errors[:base]).to include("Cannot have both dollar_off and percent_off")
+    end
   end
 
   describe 'filtering coupons' do
