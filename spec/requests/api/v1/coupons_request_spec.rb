@@ -10,6 +10,13 @@ describe "coupons" do
       name: "Steve"
     )
 
+    @item1 = Item.create({
+      name: "apple",
+      description: "is an apple",
+      unit_price: 0.50,
+      merchant_id: @merchant1.id
+    })
+
     @coupon1 = Coupon.create!(
       name: Faker::Commerce.product_name,
       code: Faker::Commerce.promotion_code,
@@ -60,8 +67,18 @@ describe "coupons" do
     )
 
     invoice1 = Invoice.create!(
-      customer_id: bob.id, merchant_id: @merchant1.id, status: "shipped", coupon_id: @coupon4.id
+      customer_id: bob.id, merchant_id: @merchant1.id, status: "shipped"
     )
+
+    InvoiceItem.create!(
+      invoice: invoice1,
+      item: @item1,
+      quantity: 1, 
+      unit_price: @item1.unit_price
+    )
+
+    invoice1.update!(coupon_id: @coupon4.id)
+
   end
 
   describe 'getting coupons' do
