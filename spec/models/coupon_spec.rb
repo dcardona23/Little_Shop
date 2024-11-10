@@ -13,6 +13,27 @@ RSpec.describe Coupon, type: :model do
 
     bob = Customer.create!(first_name: "Bob", last_name: "Tucker")
 
+    @item1 = Item.create({
+      name: "apple",
+      description: "is an apple",
+      unit_price: 0.50,
+      merchant_id: @merchant1.id
+    })
+    
+    @item2 = Item.create({
+      name: "cherry",
+      description: "is a cherry",
+      unit_price: 1.50,
+      merchant_id: @merchant1.id
+    })
+    
+    @item3 = Item.create({
+      name: "pear",
+      description: "is a pear",
+      unit_price: 0.75,
+      merchant_id: @merchant1.id
+    })
+
     @coupon = Coupon.create!(
         name: "New Coupon", 
         code: "Test Code", 
@@ -74,14 +95,21 @@ RSpec.describe Coupon, type: :model do
       active: false
     )
 
-    invoice1 = Invoice.create!(
+    @invoice1 = Invoice.create!(
       customer_id: bob.id, 
       merchant_id: @merchant1.id, 
       status: "shipped", 
-      coupon_id: @coupon5.id
       )
 
+    InvoiceItem.create!(
+      invoice: @invoice1,
+      item: @item1,
+      quantity: 1, 
+      unit_price: @item1.unit_price
+    )
 
+    @invoice1.update!(coupon_id: @coupon5.id)
+    
   end
 
   describe 'relationships' do

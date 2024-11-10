@@ -4,5 +4,5 @@ class InvoiceItem < ApplicationRecord
 
   validates_presence_of :quantity, :presence => true
   validates_presence_of :unit_price, :presence => true
-
+  
 end
