@@ -13,6 +13,26 @@ class Invoice < ApplicationRecord
     where(status: input)
   end
 
+  def invoice_subtotal
+    invoice_items.sum { |invoice_item| invoice_item.quantity * invoice_item.unit_price }
+  end
+
+  def discount_total
+    return 0 unless coupon
+
+    if coupon.percent_off
+      invoice_subtotal * (coupon.percent_off.to_f / 100)
+    elsif coupon.dollar_off
+      [coupon.dollar_off, invoice_subtotal].min
+    else
+      0
+    end
+  end
+
+  def total_invoice_cost
+    [invoice_subtotal - discount_total, 0].max
+  end
+
   private
 
   def coupon_merchant_sells_invoice_items
