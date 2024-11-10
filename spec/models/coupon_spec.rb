@@ -11,6 +11,8 @@ RSpec.describe Coupon, type: :model do
     @merchant = Merchant.create!(name: "Test Merchant")
     @merchant1 = Merchant.create!(name: "Test Merchant2")
 
+    bob = Customer.create!(first_name: "Bob", last_name: "Tucker")
+
     @coupon = Coupon.create!(
         name: "New Coupon", 
         code: "Test Code", 
@@ -71,6 +73,15 @@ RSpec.describe Coupon, type: :model do
       merchant_id: @merchant1.id, 
       active: false
     )
+
+    invoice1 = Invoice.create!(
+      customer_id: bob.id, 
+      merchant_id: @merchant1.id, 
+      status: "shipped", 
+      coupon_id: @coupon5.id
+      )
+
+
   end
 
   describe 'relationships' do
@@ -142,4 +153,26 @@ RSpec.describe Coupon, type: :model do
     expect(@coupon6.errors.full_messages).to include("Merchant cannot have more than 5 active coupons")
     end
   end
+
+  describe 'deactivation' do
+    it 'can deactivate a coupon' do
+
+      expect(@coupon2.deactivate).to be true
+    end
+
+    it 'will not deactivate a coupon that is already inactive' do
+
+      expect(@coupon6.deactivate).to be false
+      expect(@coupon6.errors.full_messages).to include("Coupon is already inactive")
+    end
+
+    it 'cannot deactivate a coupon with pending invoices' do
+      
+      expect(@coupon5.deactivate).to be false
+      expect(@coupon5.errors.full_messages).to include("Coupon cannot be deactivated with pending invoices")
+
+    end
+
+  end
+
 end
