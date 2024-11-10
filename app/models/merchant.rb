@@ -23,7 +23,4 @@ class Merchant < ApplicationRecord
     
     scope.empty? ? {} : scope.to_a
   end
-
-  
-
 end
