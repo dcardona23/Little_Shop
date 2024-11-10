@@ -5,6 +5,6 @@ class Customer < ApplicationRecord
   validates_presence_of :last_name, :presence => true
 
   def self.customersForMerchant(merchant)
-    Customer.joins(:invoices).where("merchant_id = ?", merchant).uniq
+    Customer.joins(:invoices).where("merchant_id = ?", merchant).distinct
   end
 end
