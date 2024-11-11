@@ -8,6 +8,7 @@ class Invoice < ApplicationRecord
 
   validates_presence_of :status, :presence => true
   validate :coupon_merchant_sells_invoice_items
+  validate :one_coupon_per_invoice
 
   def self.find_by_status(input)
     where(status: input)
@@ -29,6 +30,11 @@ class Invoice < ApplicationRecord
 
   def total_invoice_cost
     [invoice_subtotal - discount_total, 0].max
+  end
+
+  def one_coupon_per_invoice
+    errors.add(:coupon, "Only one coupon can be applied per invoice") if
+      coupon_id_changed? && coupon_id_was.present?
   end
 
   private

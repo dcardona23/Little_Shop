@@ -127,7 +127,7 @@ RSpec.describe Coupon, type: :model do
         percent_off: 15,
         merchant_id: @merchant.id
       )
-
+      
       expect(duplicate_coupon).to be_invalid
     end
 
