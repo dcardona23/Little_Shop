@@ -10,8 +10,14 @@ class Invoice < ApplicationRecord
   validate :coupon_merchant_sells_invoice_items
   validate :one_coupon_per_invoice
 
+  after_save :increment_coupon_usage, if: :saved_change_to_coupon_id?
+
   def self.find_by_status(input)
     where(status: input)
+  end
+
+  def increment_coupon_usage
+    coupon.calculate_usage_count if coupon 
   end
 
   def invoice_subtotal
