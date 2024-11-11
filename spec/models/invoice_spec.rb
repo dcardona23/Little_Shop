@@ -196,6 +196,14 @@ RSpec.describe Invoice do
           expect(invoice.total_invoice_cost).to eq(75)
         end
 
+        it 'correctly calculates total cost with dollar_off discount' do
+          invoice = Invoice.create!(customer: @bob, merchant: @merchant1, status: "shipped")
+          InvoiceItem.create!(quantity: 1, unit_price: 200, item: @item1, invoice: invoice)
+          invoice.coupon_id = @coupon2.id
+
+          expect(invoice.discount_total).to eq(100)
+        end
+
         it 'calculates the total cost with coupons' do
 
           expect(@invoice1.discount_total).to eq(200)
@@ -208,12 +216,22 @@ RSpec.describe Invoice do
           expect(@invoice2.discount_total).to eq(71.75)
           expect(@invoice2.total_invoice_cost).to eq(0)
         end
+      end
+
+      describe 'coupon_merchant_sells_invoice_items' do
+        it 'allows a coupon when the merchant sells an item on the invoice' do
+          invoice = Invoice.create!(customer: @bob, merchant: @merchant1, status: "shipped")
+          InvoiceItem.create!(quantity: 1, unit_price: 100, item: @item1, invoice: invoice)
+          invoice.coupon_id = @coupon1.id
+
+          expect(invoice).to be_valid
+        end
 
         it 'requires that a merchant sell an item on the invoice before applying a coupon' do
           @invoice5.coupon = @coupon1 
           @invoice1.coupon = @coupon1
           @invoice2.coupon = @coupon2
-    # binding.pry
+
           expect(@invoice5).not_to be_valid
           expect(@invoice5.errors[:coupon]).to include("Merchant does not sell an item on this invoice to which the coupon can be applied")
           expect(@invoice1).to be_valid
