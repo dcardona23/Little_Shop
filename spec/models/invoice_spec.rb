@@ -11,6 +11,52 @@ RSpec.describe Invoice do
 
   describe 'validations' do
     it {should validate_presence_of(:status)}
+
+    it 'validates that an invoice can only have one coupon' do
+      customer = Customer.create(first_name: "Bob", last_name: "Tucker")
+      merchant = Merchant.create(name: "Little Shop of Horrors")
+      invoice = Invoice.create!(customer_id: customer.id, merchant_id: merchant.id, status: "shipped")
+      item = Item.create({
+        name: "apple",
+        description: "is an apple",
+        unit_price: 0.50,
+        merchant_id: merchant.id
+        })
+
+      InvoiceItem.create!(
+        invoice: invoice,
+        item: item,
+        quantity: 1, 
+        unit_price: item.unit_price
+      )
+
+      coupon = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: 25,
+      dollar_off: nil,
+      merchant_id: merchant.id, 
+      active: true
+      )
+
+      coupon2 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: 25,
+      dollar_off: nil,
+      merchant_id: merchant.id, 
+      active: true
+      )
+
+      expect(invoice.update(coupon_id: coupon.id)).to be true
+      expect(invoice.coupon_id).to eq(coupon.id)
+
+      result = invoice.update(coupon_id: coupon2.id)
+      expect(result).to be false
+      expect(invoice.errors[:coupon]).to include("Only one coupon can be applied per invoice")
+
+      expect(invoice.update(coupon_id: [coupon.id, coupon2.id])).to be false
+    end
   end
     
   describe 'class and instance methods' do
