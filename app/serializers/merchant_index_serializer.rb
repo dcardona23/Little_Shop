@@ -15,5 +15,4 @@ class MerchantIndexSerializer
   attribute :invoice_coupon_count do |merchant|
     merchant.invoices.joins(:coupon).count
   end
-
 end

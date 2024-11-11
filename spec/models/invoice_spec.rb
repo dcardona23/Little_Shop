@@ -150,7 +150,8 @@ RSpec.describe Invoice do
       percent_off: nil,
       dollar_off: 100,
       merchant_id: @merchant1.id, 
-      active: true
+      active: true, 
+      usage_count: 0
       )
 
       @invoice1.update!(coupon_id: @coupon1.id)
@@ -210,6 +211,14 @@ RSpec.describe Invoice do
       end
 
       describe 'coupons' do
+        it 'increments coupon usage when a coupon is applied to an invoice' do
+          invoice = Invoice.create!(customer: @bob, merchant: @merchant1, status: "shipped")
+          InvoiceItem.create!(quantity: 1, unit_price: 100, item: @item1, invoice: invoice)
+          invoice.update!(coupon: @coupon2)
+          
+          expect(@coupon2.usage_count).to eq(1)
+        end
+
         it 'correctly calculates dollar_off discounts' do
           invoice = Invoice.create!(customer: @bob, merchant: @merchant1, status: "shipped")
           InvoiceItem.create!(quantity: 1, unit_price: 100, item: @item1, invoice: invoice)

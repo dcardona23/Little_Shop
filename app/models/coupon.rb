@@ -6,8 +6,13 @@ class Coupon < ApplicationRecord
   validates :code, :presence => true, uniqueness: true
   validate :dollar_off_or_percent_off_present
   validate :only_one_discount_present
+  attribute :usage_count, :integer, default: 0
   
   after_initialize :set_default_inactive, if: :new_record?
+
+  def calculate_usage_count
+    increment!(:usage_count)
+  end
 
   def self.filter_coupons(scope, params)
     scope = scope.where(merchant_id: params[:merchant_id]) if params[:merchant_id]
