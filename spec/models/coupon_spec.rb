@@ -98,7 +98,7 @@ RSpec.describe Coupon, type: :model do
     @invoice1 = Invoice.create!(
       customer_id: bob.id, 
       merchant_id: @merchant1.id, 
-      status: "shipped", 
+      status: "packaged", 
       )
 
     InvoiceItem.create!(
@@ -157,6 +157,29 @@ RSpec.describe Coupon, type: :model do
 
     expect(coupon8).not_to be_valid
     expect(coupon8.errors[:base]).to include("Cannot have both dollar_off and percent_off")
+    expect(@coupon2).to be_valid
+    expect(@coupon2.errors[:base]).to be_empty
+    expect(@coupon4).to be_valid
+    expect(@coupon4.errors[:base]).to be_empty
+    end
+
+    it 'requires a coupon to have either dollar_off or percent_off' do
+      coupon7 = Coupon.new(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: nil,
+      merchant_id: @merchant1.id, 
+      active: true
+      )
+  
+      coupon7.dollar_off_or_percent_off_present
+      @coupon2.dollar_off_or_percent_off_present
+      @coupon4.dollar_off_or_percent_off_present
+  
+      expect(coupon7.errors[:base]).to include("Either dollar_off or percent_off must be present")
+      expect(@coupon2.errors[:base]).to be_empty
+      expect(@coupon4.errors[:base]).to be_empty
     end
   end
 
@@ -226,9 +249,6 @@ RSpec.describe Coupon, type: :model do
       
       expect(@coupon5.deactivate).to be false
       expect(@coupon5.errors.full_messages).to include("Coupon cannot be deactivated with pending invoices")
-
     end
-
   end
-
 end

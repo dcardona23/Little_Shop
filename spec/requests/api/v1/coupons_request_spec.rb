@@ -67,7 +67,7 @@ describe "coupons" do
     )
 
     invoice1 = Invoice.create!(
-      customer_id: bob.id, merchant_id: @merchant1.id, status: "shipped"
+      customer_id: bob.id, merchant_id: @merchant1.id, status: "packaged"
     )
 
     InvoiceItem.create!(

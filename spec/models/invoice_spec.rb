@@ -131,6 +131,12 @@ RSpec.describe Invoice do
       expect(@invoice1.invoice_subtotal).to eq(800)
     end
 
+      it 'calculates the amount of any applicable coupons' do
+      expect(@invoice3.discount_total).to eq(0)
+      expect(@invoice1.discount_total).to eq(200)
+      expect(@invoice2.discount_total).to eq(71.75)
+    end
+
     it 'calculates the total cost with coupons' do
 
       expect(@invoice1.discount_total).to eq(200)
