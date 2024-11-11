@@ -35,7 +35,7 @@ class Coupon < ApplicationRecord
 
   def deactivate
     if active
-      invoices_with_coupon = Invoice.where(coupon_id: self.id).exists?
+      invoices_with_coupon = Invoice.where(coupon_id: self.id, status: "packaged").exists?
 
       if !invoices_with_coupon
         update(active: false)
