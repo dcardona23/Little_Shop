@@ -41,6 +41,13 @@ RSpec.describe Invoice do
         merchant_id: @merchant1.id
       })
 
+      @item4 = Item.create({
+        name: "ostrich",
+        description: "is an ostrich",
+        unit_price: 0.75,
+        merchant_id: @merchant2.id
+      })
+
       @invoice1 = Invoice.create!(customer_id: @bob.id, merchant_id: @merchant1.id, status: "shipped")
       @invoice2 = Invoice.create!(customer_id: @bob.id, merchant_id: @merchant1.id, status: "shipped")
       @invoice3 = Invoice.create!(customer_id: @bob.id, merchant_id: @merchant1.id, status: "shipped")
@@ -75,6 +82,13 @@ RSpec.describe Invoice do
         invoice_id: @invoice2.id
       )
 
+      @invoice_item5 = InvoiceItem.create!(
+        quantity: 76,
+        unit_price: @item4.unit_price,
+        item_id: @item4.id,
+        invoice_id: @invoice5.id
+      )
+
       @coupon1 = Coupon.create!(
       name: Faker::Commerce.product_name,
       code: Faker::Commerce.promotion_code,
@@ -95,66 +109,119 @@ RSpec.describe Invoice do
 
       @invoice1.update!(coupon_id: @coupon1.id)
       @invoice2.update!(coupon_id: @coupon2.id)
+    end
+    
+    describe 'fetching invoices' do
+      it 'finds all invoices for a particular merchant by status' do
+        shipped_invoices = Invoice.find_by_status("shipped")
+        expect(shipped_invoices.length).to eq(3)
+        expect(shipped_invoices).to include(@invoice1, @invoice2, @invoice3)
+        expect(shipped_invoices).not_to include(@invoice4, @invoice5)
 
+        packaged_invoices = Invoice.find_by_status("packaged")
+        expect(packaged_invoices.length).to eq(2)
+        expect(packaged_invoices).to include(@invoice4, @invoice5)
+        expect(packaged_invoices).not_to include(@invoice1, @invoice2, @invoice3)
+        
+        returned_invoices = Invoice.find_by_status("returned")
+        expect(returned_invoices).to be_empty
+
+        unknown_invoices = Invoice.find_by_status("unknown status")
+        expect(unknown_invoices).to be_empty
+      end
+
+      it 'returns an empty result for a nil status input' do
+        result = Invoice.find_by_status(nil)
+        expect(result).to be_empty
+      end
+
+      it 'returns an empty result for an empty string status input' do
+        result = Invoice.find_by_status("")
+        expect(result).to be_empty
+      end
     end
 
-    it 'finds all invoices for a particular merchant by status' do
-      shipped_invoices = Invoice.find_by_status("shipped")
-      expect(shipped_invoices.length).to eq(3)
-      expect(shipped_invoices).to include(@invoice1, @invoice2, @invoice3)
-      expect(shipped_invoices).not_to include(@invoice4, @invoice5)
+    describe 'cost' do
+      it 'calculates the subtotal of multiple items on an invoice' do
 
-      packaged_invoices = Invoice.find_by_status("packaged")
-      expect(packaged_invoices.length).to eq(2)
-      expect(packaged_invoices).to include(@invoice4, @invoice5)
-      expect(packaged_invoices).not_to include(@invoice1, @invoice2, @invoice3)
-      
-      returned_invoices = Invoice.find_by_status("returned")
-      expect(returned_invoices).to be_empty
+        expect(@invoice1.invoice_subtotal).to eq(800)
+      end
 
-      unknown_invoices = Invoice.find_by_status("unknown status")
-      expect(unknown_invoices).to be_empty
-    end
+      it 'calculates the subtotal for a single item on an invoice' do
 
-    it 'returns an empty result for a nil status input' do
-      result = Invoice.find_by_status(nil)
-      expect(result).to be_empty
-    end
+        expect(@invoice5.invoice_subtotal).to eq(57)
+      end
 
-    it 'returns an empty result for an empty string status input' do
-      result = Invoice.find_by_status("")
-      expect(result).to be_empty
-    end
+      it 'returns 0 for an invoice with no items' do
 
-    it 'calculates the cost of all items on an invoice' do
+        invoice = Invoice.create!(customer: @bob, merchant: @merchant1, status: "shipped")
+        expect(invoice.invoice_subtotal).to eq(0)
+      end
+    
+      it 'calculates the cost of all items on an invoice' do
 
-      expect(@invoice1.invoice_subtotal).to eq(800)
-    end
+        expect(@invoice1.invoice_subtotal).to eq(800)
+      end
 
-      it 'calculates the amount of any applicable coupons' do
-      expect(@invoice3.discount_total).to eq(0)
-      expect(@invoice1.discount_total).to eq(200)
-      expect(@invoice2.discount_total).to eq(71.75)
-    end
+      describe 'coupons' do
+        it 'correctly calculates dollar_off discounts' do
+          invoice = Invoice.create!(customer: @bob, merchant: @merchant1, status: "shipped")
+          InvoiceItem.create!(quantity: 1, unit_price: 100, item: @item1, invoice: invoice)
+          invoice.coupon_id = @coupon2.id
 
-    it 'calculates the total cost with coupons' do
+          expect(invoice.discount_total).to eq(100)
+        end
 
-      expect(@invoice1.discount_total).to eq(200)
-      expect(@invoice1.total_invoice_cost).to eq(600)
-    end
+        it 'caps dollar_off discount at invoice subtotal' do
+          invoice = Invoice.create!(customer: @bob, merchant: @merchant1, status: "shipped")
+          InvoiceItem.create!(quantity: 1, unit_price: 50, item: @item1, invoice: invoice)
+          invoice.coupon_id = @coupon2.id
 
-    it 'will not let the total cost be negative' do
+          expect(invoice.discount_total).to eq(50)
+        end
 
-      expect(@invoice2.invoice_subtotal).to eq(71.75)
-      expect(@invoice2.discount_total).to eq(71.75)
-      expect(@invoice2.total_invoice_cost).to eq(0)
-    end
+        it 'correctly calculates percent_off discounts' do
+          invoice = Invoice.create!(customer: @bob, merchant: @merchant1, status: "shipped")
+          InvoiceItem.create!(quantity: 1, unit_price: 100, item: @item1, invoice: invoice)
+          invoice.coupon_id = @coupon1.id
 
-    it 'requires that a merchant sell an item on the invoice before applying a coupon' do
-      @invoice5.coupon = @coupon1 
-      
-      expect(@invoice5).not_to be_valid
-      expect(@invoice5.errors[:coupon]).to include("Merchant does not sell an item on this invoice to which the coupon can be applied")
+          expect(invoice.discount_total).to eq(25)
+        end
+
+        it 'correctly calculates total cost with percent_off discount' do
+          invoice = Invoice.create!(customer: @bob, merchant: @merchant1, status: "shipped")
+          InvoiceItem.create!(quantity: 1, unit_price: 100, item: @item1, invoice: invoice)
+          invoice.coupon_id = @coupon1.id
+
+          expect(invoice.total_invoice_cost).to eq(75)
+        end
+
+        it 'calculates the total cost with coupons' do
+
+          expect(@invoice1.discount_total).to eq(200)
+          expect(@invoice1.total_invoice_cost).to eq(600)
+        end
+
+        it 'will not let the total cost be negative' do
+
+          expect(@invoice2.invoice_subtotal).to eq(71.75)
+          expect(@invoice2.discount_total).to eq(71.75)
+          expect(@invoice2.total_invoice_cost).to eq(0)
+        end
+
+        it 'requires that a merchant sell an item on the invoice before applying a coupon' do
+          @invoice5.coupon = @coupon1 
+          @invoice1.coupon = @coupon1
+          @invoice2.coupon = @coupon2
+    # binding.pry
+          expect(@invoice5).not_to be_valid
+          expect(@invoice5.errors[:coupon]).to include("Merchant does not sell an item on this invoice to which the coupon can be applied")
+          expect(@invoice1).to be_valid
+          expect(@invoice1.errors).to be_empty
+          expect(@invoice2).to be_valid
+          expect(@invoice2.errors).to be_empty
+        end
+      end
     end
   end
 end
