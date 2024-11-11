@@ -146,21 +146,48 @@ RSpec.describe Coupon, type: :model do
     end
 
     it 'validates that both dollar_off and percent_off cannot be present' do
-      coupon8 = Coupon.new(
-      name: Faker::Commerce.product_name,
-      code: Faker::Commerce.promotion_code,
-      percent_off: 10,
-      dollar_off: 10,
-      merchant_id: @merchant1.id, 
-      active: true
-    )
+      coupon8 = Coupon.new(percent_off: 10, dollar_off: 10)
 
-    expect(coupon8).not_to be_valid
-    expect(coupon8.errors[:base]).to include("Cannot have both dollar_off and percent_off")
-    expect(@coupon2).to be_valid
-    expect(@coupon2.errors[:base]).to be_empty
-    expect(@coupon4).to be_valid
-    expect(@coupon4.errors[:base]).to be_empty
+      coupon8.only_one_discount_present
+
+      expect(coupon8).not_to be_valid
+      expect(coupon8.errors[:base]).to include("Cannot have both dollar_off and percent_off")
+    end
+
+    it 'validates any combination of dollar_off and percent_off' do
+      coupon_with_dollar_off = Coupon.new(
+        name: Faker::Commerce.product_name,
+        code: Faker::Commerce.promotion_code,
+        percent_off: nil,
+        dollar_off: 10,
+        merchant_id: @merchant1.id, 
+        active: true
+      )
+      
+      coupon_with_percent_off = Coupon.new(
+        name: Faker::Commerce.product_name,
+        code: Faker::Commerce.promotion_code,
+        percent_off: nil,
+        dollar_off: 10,
+        merchant_id: @merchant1.id, 
+        active: true
+      ) 
+
+      invalid_coupon1 = Coupon.new
+
+      invalid_coupon2 = Coupon.new(
+        name: Faker::Commerce.product_name,
+        code: Faker::Commerce.promotion_code,
+        percent_off: nil,
+        dollar_off: nil,
+        merchant_id: @merchant1.id, 
+        active: true
+      )
+
+      expect(coupon_with_dollar_off).to be_valid
+      expect(coupon_with_percent_off).to be_valid
+      expect(invalid_coupon1).not_to be_valid
+      expect(invalid_coupon2).not_to be_valid
     end
 
     it 'requires a coupon to have either dollar_off or percent_off' do
@@ -176,7 +203,8 @@ RSpec.describe Coupon, type: :model do
       coupon7.dollar_off_or_percent_off_present
       @coupon2.dollar_off_or_percent_off_present
       @coupon4.dollar_off_or_percent_off_present
-  
+  # binding.pry
+      expect(coupon7).not_to be_valid
       expect(coupon7.errors[:base]).to include("Either dollar_off or percent_off must be present")
       expect(@coupon2.errors[:base]).to be_empty
       expect(@coupon4.errors[:base]).to be_empty

@@ -180,6 +180,46 @@ describe "coupons" do
       expect(data[:errors]).to be_an(Array)
       expect(data[:errors][0]).to eq("Code has already been taken")
     end
+
+    it 'cannot create a coupon without either dollar_off or percent_off' do
+      coupon_params = {
+        name: Faker::Commerce.product_name,
+        code: "FreeToday",
+        percent_off: nil,
+        dollar_off: nil,
+        merchant_id: @merchant1.id
+        }
+
+      headers = {"CONTENT_TYPE" => "application/json"}
+      post "/api/v1/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
+      data = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).not_to be_successful
+      expect(response).to have_http_status(400)      
+      expect(data[:message]).to eq("Your query could not be completed")
+      expect(data[:errors]).to be_an(Array)
+      expect(data[:errors][0]).to eq("Either dollar_off or percent_off must be present")
+    end
+
+    it 'cannot create a coupon with both dollar_off and percent_off' do
+      coupon_params = {
+        name: Faker::Commerce.product_name,
+        code: "FreeToday",
+        percent_off: 20,
+        dollar_off: 20,
+        merchant_id: @merchant1.id
+        }
+
+      headers = {"CONTENT_TYPE" => "application/json"}
+      post "/api/v1/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
+      data = JSON.parse(response.body, symbolize_names: true)
+
+      expect(response).not_to be_successful
+      expect(response).to have_http_status(400)      
+      expect(data[:message]).to eq("Your query could not be completed")
+      expect(data[:errors]).to be_an(Array)
+      expect(data[:errors][0]).to eq("Cannot have both dollar_off and percent_off")
+    end
   end
 
   describe 'activating coupons' do 
