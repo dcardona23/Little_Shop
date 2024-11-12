@@ -220,6 +220,54 @@ describe "coupons" do
       expect(data[:errors]).to be_an(Array)
       expect(data[:errors][0]).to eq("Cannot have both dollar_off and percent_off")
     end
+
+    it 'cannot save a coupon if the merchant has 5 active coupons' do
+      @coupon6 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+      )
+
+      @coupon7 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+      )
+
+      @coupon8 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+      )
+
+      coupon_params = {
+        name: Faker::Commerce.product_name,
+        code: "FreeToday",
+        percent_off: 20,
+        dollar_off: nil,
+        merchant_id: @merchant1.id
+        }
+
+      headers = {"CONTENT_TYPE" => "application/json"}
+      post "/api/v1/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
+      data = JSON.parse(response.body, symbolize_names: true)
+
+        # binding.pry
+      expect(response).not_to be_successful
+      expect(response).to have_http_status(422)      
+      expect(data[:message]).to eq("Your query could not be completed")
+      expect(data[:errors]).to be_an(Array)
+      expect(data[:errors][0]).to eq("Merchant cannot have more than 5 active coupons")
+    end
   end
 
   describe 'activating coupons' do 
