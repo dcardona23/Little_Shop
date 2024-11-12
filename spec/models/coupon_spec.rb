@@ -279,4 +279,66 @@ RSpec.describe Coupon, type: :model do
       expect(@coupon5.errors.full_messages).to include("Coupon cannot be deactivated with pending invoices")
     end
   end
+
+  describe 'saving' do
+    before(:each) do
+      @coupon7 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+      )
+
+    @coupon8 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+      )
+
+      @coupon9 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant.id, 
+      active: true
+      )
+
+    end
+
+    it 'can save a coupon if the coupon is valid and if the merchant does not have 5 other active coupons' do
+      
+    expect(@coupon6.can_save?).to be false
+    expect(@coupon6.valid?).to be true
+    expect(@coupon6.save_coupon).to be false
+    expect(@coupon9.can_save?).to be true
+    expect(@coupon9.valid?).to be true
+    expect(@coupon9.save_coupon).to be true
+    end
+
+    it 'will not save a coupon with a duplicate code' do
+      expect(@coupon6.save_coupon).to be false
+      expect(@coupon6.errors[:code]).to include("has already been used")
+    end
+
+    it 'will not save a coupon if a merchant has 5 other active coupons' do
+      @coupon10 = Coupon.create!(
+      name: Faker::Commerce.product_name,
+      code: Faker::Commerce.promotion_code,
+      percent_off: nil,
+      dollar_off: 2,
+      merchant_id: @merchant1.id, 
+      active: true
+      )
+
+      expect(@coupon10.can_save?).to be false
+      expect(@coupon10.save_coupon).to be false
+      expect(@coupon10.errors[:base]).to include("Merchant cannot have more than 5 active coupons")
+    end
+  end
 end
