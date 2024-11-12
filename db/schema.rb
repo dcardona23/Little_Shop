@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_11_12_165325) do
+ActiveRecord::Schema[7.1].define(version: 2024_11_12_180634) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -19,11 +19,12 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_12_165325) do
     t.string "code"
     t.integer "percent_off"
     t.integer "dollar_off"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.bigint "merchant_id", null: false
     t.boolean "active"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "usage_count"
+    t.index ["code"], name: "index_coupons_on_code", unique: true
     t.index ["merchant_id"], name: "index_coupons_on_merchant_id"
   end
 
@@ -69,8 +70,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_12_165325) do
 
   create_table "merchants", force: :cascade do |t|
     t.string "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "transactions", force: :cascade do |t|
@@ -88,5 +89,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_12_165325) do
   add_foreign_key "invoice_items", "items"
   add_foreign_key "invoices", "coupons"
   add_foreign_key "invoices", "customers"
+  add_foreign_key "invoices", "merchants"
+  add_foreign_key "items", "merchants"
   add_foreign_key "transactions", "invoices"
 end
