@@ -2,7 +2,7 @@ class Coupon < ApplicationRecord
   belongs_to :merchant
   has_many :invoices
 
-  validates :code, :presence => true, uniqueness: { message: "has already been taken" }
+  validates :code, :presence => true, uniqueness: true 
   validate :dollar_off_or_percent_off_present
   validate :only_one_discount_present
   attribute :usage_count, :integer, default: 0
