@@ -22,6 +22,18 @@ class Coupon < ApplicationRecord
     scope.to_a
   end
 
+  def can_save?
+    Coupon.where(merchant_id: merchant_id, active: true).count < 5
+  end
+
+  def save_coupon
+    if can_save?
+      save
+    elsif
+      errors.add(:base, "Merchant cannot have more than 5 active coupons")
+    end
+  end
+
   def set_default_inactive
     self.active ||= false
   end
