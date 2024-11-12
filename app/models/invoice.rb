@@ -16,10 +16,6 @@ class Invoice < ApplicationRecord
     where(status: input)
   end
 
-  def increment_coupon_usage
-    coupon.calculate_usage_count if coupon 
-  end
-
   def invoice_subtotal
     invoice_items.sum { |invoice_item| invoice_item.quantity * invoice_item.unit_price }
   end
@@ -38,11 +34,6 @@ class Invoice < ApplicationRecord
     [invoice_subtotal - discount_total, 0].max
   end
 
-  def one_coupon_per_invoice
-    errors.add(:coupon, "Only one coupon can be applied per invoice") if
-      coupon_id_changed? && coupon_id_was.present?
-  end
-
   private
 
   def coupon_merchant_sells_invoice_items
@@ -52,4 +43,14 @@ class Invoice < ApplicationRecord
       errors.add(:coupon, "Merchant does not sell an item on this invoice to which the coupon can be applied")
     end
   end
+
+  def one_coupon_per_invoice
+    errors.add(:coupon, "Only one coupon can be applied per invoice") if
+      coupon_id_changed? && coupon_id_was.present?
+  end
+
+  def increment_coupon_usage
+    coupon.calculate_usage_count if coupon 
+  end
+
 end
