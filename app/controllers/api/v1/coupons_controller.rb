@@ -17,8 +17,11 @@ class Api::V1::CouponsController < ApplicationController
     if coupon.save_coupon
         render json: CouponSerializer.new(coupon), status: :created
     else
-      error = ActiveRecord::RecordInvalid.new(coupon)
-      record_invalid(error)
+      if coupon.errors[:code].include?("has already been taken")
+        render json: { status: "422", message: "Code has already been used" }, status: :unprocessable_entity
+      else coupon.errors[:base].include?("Merchant cannot have more than 5 active coupons")
+        render json: { status: "422", message: "Merchant cannot have more than 5 active coupons" }, status: :unprocessable_entity
+      end
     end
   end
 

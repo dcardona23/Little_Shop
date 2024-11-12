@@ -2,7 +2,6 @@ class Coupon < ApplicationRecord
   belongs_to :merchant
   has_many :invoices
 
-  validates :name, :presence => true
   validates :code, :presence => true, uniqueness: true
   validate :dollar_off_or_percent_off_present
   validate :only_one_discount_present
@@ -23,14 +22,14 @@ class Coupon < ApplicationRecord
   end
 
   def can_save?
-    Coupon.where(merchant_id: merchant_id, active: true).count < 5
+    Coupon.where(merchant_id: merchant_id, active: true).count < 5 
   end
 
   def save_coupon
-    if can_save?
+    if can_save? && valid?
       save
-    elsif
-      errors.add(:base, "Merchant cannot have more than 5 active coupons")
+      else
+      false
     end
   end
 
