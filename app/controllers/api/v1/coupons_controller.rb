@@ -14,7 +14,7 @@ class Api::V1::CouponsController < ApplicationController
   def create
     coupon = Coupon.new(coupon_params)
 
-    if coupon.save
+    if coupon.save_coupon
         render json: CouponSerializer.new(coupon), status: :created
     else
       error = ActiveRecord::RecordInvalid.new(coupon)
