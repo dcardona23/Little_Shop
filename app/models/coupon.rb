@@ -9,16 +9,29 @@ class Coupon < ApplicationRecord
   
   after_initialize :set_default_inactive, if: :new_record?
 
-  def calculate_usage_count
-    increment!(:usage_count)
-  end
-
+ 
   def self.filter_coupons(scope, params)
     scope = scope.where(merchant_id: params[:merchant_id]) if params[:merchant_id]
     scope = scope.where(active: true) if params[:active].present? && params[:active].to_s.downcase == 'true'
     scope = scope.where(active: false) if params[:active].present? && params[:active].to_s.downcase == 'false'
 
     scope.to_a
+  end
+
+  def calculate_usage_count
+    increment!(:usage_count)
+  end
+
+  def dollar_off_or_percent_off_present
+    if dollar_off.nil? && percent_off.nil?
+      errors.add(:base, "Either dollar_off or percent_off must be present")
+    end
+  end
+
+  def only_one_discount_present
+    if dollar_off.present? && percent_off.present?
+      errors.add(:base, "Cannot have both dollar_off and percent_off")
+    end
   end
 
   def can_save?
@@ -33,10 +46,6 @@ class Coupon < ApplicationRecord
       errors.add(:base, "Merchant cannot have more than 5 active coupons")
       false
     end
-  end
-
-  def set_default_inactive
-    self.active ||= false
   end
 
   def activate(merchant_id)
@@ -72,15 +81,9 @@ class Coupon < ApplicationRecord
     !active && Coupon.where(merchant_id: merchant_id, active: true).count < 5
   end
 
-  def dollar_off_or_percent_off_present
-    if dollar_off.nil? && percent_off.nil?
-      errors.add(:base, "Either dollar_off or percent_off must be present")
-    end
-  end
+private
 
-  def only_one_discount_present
-    if dollar_off.present? && percent_off.present?
-      errors.add(:base, "Cannot have both dollar_off and percent_off")
-    end
+  def set_default_inactive
+    self.active ||= false
   end
 end
