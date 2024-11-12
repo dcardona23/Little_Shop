@@ -258,7 +258,6 @@ RSpec.describe Coupon, type: :model do
 
     expect(@coupon6.activate(@merchant1.id)).to be false
     expect(@coupon6.errors.full_messages).to include("Merchant cannot have more than 5 active coupons")
-    binding.pry
     end
   end
 

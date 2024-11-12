@@ -175,7 +175,7 @@ describe "coupons" do
 
 
       expect(response).not_to be_successful
-      expect(response).to have_http_status(400)      
+      expect(response).to have_http_status(422)      
       expect(data[:message]).to eq("Your query could not be completed")
       expect(data[:errors]).to be_an(Array)
       expect(data[:errors][0]).to eq("Code has already been taken")
@@ -195,7 +195,7 @@ describe "coupons" do
       data = JSON.parse(response.body, symbolize_names: true)
 
       expect(response).not_to be_successful
-      expect(response).to have_http_status(400)      
+      expect(response).to have_http_status(422)      
       expect(data[:message]).to eq("Your query could not be completed")
       expect(data[:errors]).to be_an(Array)
       expect(data[:errors][0]).to eq("Either dollar_off or percent_off must be present")
@@ -215,7 +215,7 @@ describe "coupons" do
       data = JSON.parse(response.body, symbolize_names: true)
 
       expect(response).not_to be_successful
-      expect(response).to have_http_status(400)      
+      expect(response).to have_http_status(422)      
       expect(data[:message]).to eq("Your query could not be completed")
       expect(data[:errors]).to be_an(Array)
       expect(data[:errors][0]).to eq("Cannot have both dollar_off and percent_off")

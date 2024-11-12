@@ -28,7 +28,9 @@ class Coupon < ApplicationRecord
   def save_coupon
     if can_save? && valid?
       save
-      else
+    else
+      errors.add(:code, "has already been used") if Coupon.exists?(code: code)
+      errors.add(:base, "Merchant cannot have more than 5 active coupons")
       false
     end
   end
