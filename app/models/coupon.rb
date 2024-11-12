@@ -2,7 +2,7 @@ class Coupon < ApplicationRecord
   belongs_to :merchant
   has_many :invoices
 
-  validates :code, :presence => true, uniqueness: true
+  validates :code, :presence => true, uniqueness: { message: "has already been taken" }
   validate :dollar_off_or_percent_off_present
   validate :only_one_discount_present
   attribute :usage_count, :integer, default: 0
@@ -34,18 +34,18 @@ class Coupon < ApplicationRecord
     end
   end
 
-  def can_save?
-    Coupon.where(merchant_id: merchant_id, active: true).count < 5 
-  end
-
   def save_coupon
-    if can_save? && valid?
-      save
-    else
-      errors.add(:code, "has already been used") if Coupon.exists?(code: code)
-      errors.add(:base, "Merchant cannot have more than 5 active coupons")
+    if Coupon.exists?(code: code)
+      errors.add(:code, "has already been used")
+    end
+
+    if Coupon.where(merchant_id: merchant_id, active: true).count >= 5
+      errors.add(:base, "Merchant cannot have more than 5 active coupons") 
       false
     end
+    
+    return false if errors.any? || !valid?
+      save
   end
 
   def activate(merchant_id)

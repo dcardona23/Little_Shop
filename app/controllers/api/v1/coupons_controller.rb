@@ -17,9 +17,7 @@ class Api::V1::CouponsController < ApplicationController
     if coupon.save_coupon
         render json: CouponSerializer.new(coupon), status: :created
     else
-      message = "Your query could not be completed"
-      errors = coupon.errors.full_messages
-      render json: { message: message, errors: errors }, status: :unprocessable_entity
+      render json: { message: "Your query could not be completed", errors: coupon.errors.full_messages }, status: :unprocessable_entity
     end
   end
 

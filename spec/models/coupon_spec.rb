@@ -238,7 +238,7 @@ RSpec.describe Coupon, type: :model do
     end
 
     it 'will not activate a coupon for a merchant that has 5 active coupons' do
-      @coupon7 = Coupon.create!(
+      coupon7 = Coupon.create!(
       name: Faker::Commerce.product_name,
       code: Faker::Commerce.promotion_code,
       percent_off: nil,
@@ -247,7 +247,7 @@ RSpec.describe Coupon, type: :model do
       active: true
     )
 
-    @coupon8 = Coupon.create!(
+    coupon8 = Coupon.create!(
       name: Faker::Commerce.product_name,
       code: Faker::Commerce.promotion_code,
       percent_off: nil,
@@ -300,7 +300,7 @@ RSpec.describe Coupon, type: :model do
       active: true
       )
 
-      @coupon9 = Coupon.create!(
+      @coupon10 = Coupon.new(
       name: Faker::Commerce.product_name,
       code: Faker::Commerce.promotion_code,
       percent_off: nil,
@@ -308,17 +308,15 @@ RSpec.describe Coupon, type: :model do
       merchant_id: @merchant.id, 
       active: true
       )
-
     end
 
     it 'can save a coupon if the coupon is valid and if the merchant does not have 5 other active coupons' do
       
-    expect(@coupon6.can_save?).to be false
     expect(@coupon6.valid?).to be true
     expect(@coupon6.save_coupon).to be false
-    expect(@coupon9.can_save?).to be true
-    expect(@coupon9.valid?).to be true
-    expect(@coupon9.save_coupon).to be true
+    expect(@coupon10.valid?).to be true
+    expect(@coupon10.errors.empty?).to be true
+    expect(@coupon10.save_coupon).to be true
     end
 
     it 'will not save a coupon with a duplicate code' do
@@ -327,7 +325,7 @@ RSpec.describe Coupon, type: :model do
     end
 
     it 'will not save a coupon if a merchant has 5 other active coupons' do
-      @coupon10 = Coupon.create!(
+      coupon11 = Coupon.create!(
       name: Faker::Commerce.product_name,
       code: Faker::Commerce.promotion_code,
       percent_off: nil,
@@ -336,9 +334,8 @@ RSpec.describe Coupon, type: :model do
       active: true
       )
 
-      expect(@coupon10.can_save?).to be false
-      expect(@coupon10.save_coupon).to be false
-      expect(@coupon10.errors[:base]).to include("Merchant cannot have more than 5 active coupons")
+      expect(coupon11.save_coupon).to be false
+      expect(coupon11.errors[:base]).to include("Merchant cannot have more than 5 active coupons")
     end
   end
 end

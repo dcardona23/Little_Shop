@@ -178,7 +178,7 @@ describe "coupons" do
       expect(response).to have_http_status(422)      
       expect(data[:message]).to eq("Your query could not be completed")
       expect(data[:errors]).to be_an(Array)
-      expect(data[:errors][0]).to eq("Code has already been taken")
+      expect(data[:errors][0]).to eq("Code has already been used")
     end
 
     it 'cannot create a coupon without either dollar_off or percent_off' do
