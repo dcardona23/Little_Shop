@@ -261,7 +261,6 @@ describe "coupons" do
       post "/api/v1/coupons", headers: headers, params: JSON.generate(coupon: coupon_params)
       data = JSON.parse(response.body, symbolize_names: true)
 
-        # binding.pry
       expect(response).not_to be_successful
       expect(response).to have_http_status(422)      
       expect(data[:message]).to eq("Your query could not be completed")

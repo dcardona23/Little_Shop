@@ -203,7 +203,7 @@ RSpec.describe Coupon, type: :model do
       coupon7.dollar_off_or_percent_off_present
       @coupon2.dollar_off_or_percent_off_present
       @coupon4.dollar_off_or_percent_off_present
-  # binding.pry
+
       expect(coupon7).not_to be_valid
       expect(coupon7.errors[:base]).to include("Either dollar_off or percent_off must be present")
       expect(@coupon2.errors[:base]).to be_empty
